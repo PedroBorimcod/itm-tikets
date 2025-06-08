@@ -2,10 +2,14 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, User, ShoppingCart, Ticket } from 'lucide-react';
+import { Menu, User, ShoppingCart, Ticket, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const navItems = [
     { label: 'Início', href: '#inicio' },
@@ -13,6 +17,14 @@ const Navbar = () => {
     { label: 'Comprar', href: '#comprar' },
     { label: 'Contato', href: '#contato' }
   ];
+
+  const handleAuthClick = () => {
+    if (user) {
+      signOut();
+    } else {
+      navigate('/auth');
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -45,13 +57,42 @@ const Navbar = () => {
               <ShoppingCart className="h-4 w-4 mr-2" />
               Carrinho
             </Button>
-            <Button variant="outline" size="sm" className="border-foreground text-foreground hover:bg-primary hover:text-white">
-              <User className="h-4 w-4 mr-2" />
-              Entrar
-            </Button>
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-white font-bold">
-              Cadastrar
-            </Button>
+            
+            {user ? (
+              <>
+                <span className="text-sm font-medium text-foreground">
+                  Olá, {user.user_metadata?.full_name || user.email}
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleAuthClick}
+                  className="border-foreground text-foreground hover:bg-primary hover:text-white"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleAuthClick}
+                  className="border-foreground text-foreground hover:bg-primary hover:text-white"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Entrar
+                </Button>
+                <Button 
+                  size="sm" 
+                  onClick={() => navigate('/auth')}
+                  className="bg-primary hover:bg-primary/90 text-white font-bold"
+                >
+                  Cadastrar
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu */}
@@ -78,13 +119,39 @@ const Navbar = () => {
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     Carrinho
                   </Button>
-                  <Button variant="outline" className="w-full justify-start border-foreground text-foreground hover:bg-primary hover:text-white">
-                    <User className="h-4 w-4 mr-2" />
-                    Entrar
-                  </Button>
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold">
-                    Cadastrar
-                  </Button>
+                  
+                  {user ? (
+                    <>
+                      <div className="px-2 py-1 text-sm font-medium text-foreground">
+                        {user.user_metadata?.full_name || user.email}
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start border-foreground text-foreground hover:bg-primary hover:text-white"
+                        onClick={handleAuthClick}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sair
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start border-foreground text-foreground hover:bg-primary hover:text-white"
+                        onClick={handleAuthClick}
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Entrar
+                      </Button>
+                      <Button 
+                        className="w-full bg-primary hover:bg-primary/90 text-white font-bold"
+                        onClick={() => navigate('/auth')}
+                      >
+                        Cadastrar
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </SheetContent>

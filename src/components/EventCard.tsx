@@ -2,7 +2,9 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, MapPin, Users, Heart, Share2 } from 'lucide-react';
+import { CalendarDays, MapPin, Users, ShoppingCart } from 'lucide-react';
+import ProtectedButton from './ProtectedButton';
+import { useToast } from '@/hooks/use-toast';
 
 interface Event {
   id: number;
@@ -23,6 +25,8 @@ interface EventCardProps {
 }
 
 const EventCard = ({ event }: EventCardProps) => {
+  const { toast } = useToast();
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR', {
@@ -32,93 +36,90 @@ const EventCard = ({ event }: EventCardProps) => {
     });
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
-  };
+  const availableTickets = event.capacity - event.soldTickets;
+  const isLowStock = availableTickets <= 50;
+  const isSoldOut = availableTickets <= 0;
 
-  const getAvailabilityColor = () => {
-    const percentage = (event.soldTickets / event.capacity) * 100;
-    if (percentage >= 90) return 'text-red-600';
-    if (percentage >= 70) return 'text-primary';
-    return 'text-green-600';
-  };
-
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      'música': 'bg-primary/10 text-primary border-primary/20',
-      'workshop': 'bg-foreground/10 text-foreground border-foreground/20',
-      'entretenimento': 'bg-primary/10 text-primary border-primary/20',
-      'tecnologia': 'bg-foreground/10 text-foreground border-foreground/20',
-      'gastronomia': 'bg-primary/10 text-primary border-primary/20',
-      'palestra': 'bg-foreground/10 text-foreground border-foreground/20'
-    };
-    return colors[category] || 'bg-muted text-foreground border-border';
+  const handleBuyTicket = () => {
+    toast({
+      title: "Redirecionando para compra",
+      description: `Você será redirecionado para comprar ingressos do evento: ${event.title}`
+    });
+    // Aqui você implementaria a lógica de redirecionamento para a página de compra
   };
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 border-border bg-card hover:border-primary/50">
-      <div className="relative overflow-hidden">
-        <img
-          src={event.image}
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow border-2 border-border">
+      <div className="relative">
+        <img 
+          src={event.image} 
           alt={event.title}
-          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+          className="w-full h-48 object-cover"
         />
-        <div className="absolute top-3 left-3">
-          <Badge className={`${getCategoryColor(event.category)} font-bold border`}>
-            {event.category.charAt(0).toUpperCase() + event.category.slice(1)}
+        <Badge 
+          className="absolute top-2 right-2 bg-primary text-white font-bold"
+        >
+          {event.category}
+        </Badge>
+        {isLowStock && !isSoldOut && (
+          <Badge 
+            variant="destructive" 
+            className="absolute top-2 left-2 font-bold"
+          >
+            Últimos ingressos!
           </Badge>
-        </div>
-        <div className="absolute top-3 right-3 flex gap-2">
-          <Button size="sm" variant="secondary" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/90 hover:bg-background">
-            <Heart className="h-4 w-4" />
-          </Button>
-          <Button size="sm" variant="secondary" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/90 hover:bg-background">
-            <Share2 className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="absolute bottom-3 left-3 bg-primary text-white rounded-lg px-3 py-1">
-          <span className="text-lg font-black">{formatPrice(event.price)}</span>
-        </div>
+        )}
+        {isSoldOut && (
+          <Badge 
+            variant="secondary" 
+            className="absolute top-2 left-2 bg-gray-600 text-white font-bold"
+          >
+            Esgotado
+          </Badge>
+        )}
       </div>
       
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-black line-clamp-2 group-hover:text-primary transition-colors text-foreground">
+      <CardHeader>
+        <CardTitle className="font-black text-foreground line-clamp-2">
           {event.title}
         </CardTitle>
-        <CardDescription className="line-clamp-2 text-muted-foreground">
+        <CardDescription className="font-medium">
           {event.description}
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="pt-0">
-        <div className="space-y-2">
-          <div className="flex items-center text-sm text-foreground font-medium">
-            <CalendarDays className="h-4 w-4 mr-2 text-primary" />
-            {formatDate(event.date)} às {event.time}
-          </div>
-          <div className="flex items-center text-sm text-foreground font-medium">
-            <MapPin className="h-4 w-4 mr-2 text-primary" />
-            {event.location}
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center text-foreground font-medium">
-              <Users className="h-4 w-4 mr-2 text-primary" />
-              {event.capacity - event.soldTickets} vagas restantes
-            </div>
-            <span className={`font-black ${getAvailabilityColor()}`}>
-              {Math.round(((event.capacity - event.soldTickets) / event.capacity) * 100)}% disponível
-            </span>
-          </div>
+      <CardContent className="space-y-4">
+        <div className="flex items-center text-sm text-muted-foreground">
+          <CalendarDays className="h-4 w-4 mr-2 text-primary" />
+          <span className="font-bold">{formatDate(event.date)} às {event.time}</span>
+        </div>
+        
+        <div className="flex items-center text-sm text-muted-foreground">
+          <MapPin className="h-4 w-4 mr-2 text-primary" />
+          <span className="font-medium">{event.location}</span>
+        </div>
+        
+        <div className="flex items-center text-sm text-muted-foreground">
+          <Users className="h-4 w-4 mr-2 text-primary" />
+          <span className="font-medium">
+            {availableTickets} ingressos disponíveis de {event.capacity}
+          </span>
+        </div>
+        
+        <div className="text-2xl font-black text-primary">
+          R$ {event.price.toFixed(2).replace('.', ',')}
         </div>
       </CardContent>
       
-      <CardFooter className="pt-0">
-        <Button className="w-full group-hover:bg-primary/90 transition-colors bg-primary text-white font-black">
-          Comprar Ingresso
-        </Button>
+      <CardFooter>
+        <ProtectedButton 
+          className="w-full bg-primary hover:bg-primary/90 text-white font-bold"
+          disabled={isSoldOut}
+          onClick={handleBuyTicket}
+        >
+          <ShoppingCart className="h-4 w-4 mr-2" />
+          {isSoldOut ? 'Esgotado' : 'Comprar Ingresso'}
+        </ProtectedButton>
       </CardFooter>
     </Card>
   );
