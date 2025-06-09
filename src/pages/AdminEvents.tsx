@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,7 +36,7 @@ const AdminEvents = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user?.email !== '2581') {
+    if (user?.email !== 'pepedr13@gmail.com') {
       navigate('/');
       return;
     }
@@ -141,7 +140,7 @@ const AdminEvents = () => {
     }
   };
 
-  if (user?.email !== '2581') {
+  if (user?.email !== 'pepedr13@gmail.com') {
     return null;
   }
 

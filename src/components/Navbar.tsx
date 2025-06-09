@@ -40,7 +40,7 @@ const Navbar = () => {
               Produtoras
             </Button>
 
-            {user?.email === '2581' && (
+            {user?.email === 'pepedr13@gmail.com' && (
               <Button variant="ghost" onClick={() => navigate('/admin/events')}>
                 Administração
               </Button>
