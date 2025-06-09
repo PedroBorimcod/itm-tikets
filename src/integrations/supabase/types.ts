@@ -53,6 +53,7 @@ export type Database = {
           image: string | null
           location: string
           price: number
+          producer_id: string | null
           sold_tickets: number | null
           time: string
           title: string
@@ -69,6 +70,7 @@ export type Database = {
           image?: string | null
           location: string
           price: number
+          producer_id?: string | null
           sold_tickets?: number | null
           time: string
           title: string
@@ -85,12 +87,21 @@ export type Database = {
           image?: string | null
           location?: string
           price?: number
+          producer_id?: string | null
           sold_tickets?: number | null
           time?: string
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -101,6 +112,7 @@ export type Database = {
           price: number
           qr_code: string | null
           quantity: number
+          sale_amount: number | null
         }
         Insert: {
           created_at?: string
@@ -110,6 +122,7 @@ export type Database = {
           price: number
           qr_code?: string | null
           quantity: number
+          sale_amount?: number | null
         }
         Update: {
           created_at?: string
@@ -119,6 +132,7 @@ export type Database = {
           price?: number
           qr_code?: string | null
           quantity?: number
+          sale_amount?: number | null
         }
         Relationships: [
           {
@@ -164,6 +178,39 @@ export type Database = {
         }
         Relationships: []
       }
+      producers: {
+        Row: {
+          balance: number | null
+          created_at: string
+          created_by: string | null
+          email: string
+          id: string
+          name: string
+          password_hash: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string
+          created_by?: string | null
+          email: string
+          id?: string
+          name: string
+          password_hash: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          id?: string
+          name?: string
+          password_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -187,6 +234,51 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          event_id: string | null
+          id: string
+          producer_id: string | null
+          type: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          producer_id?: string | null
+          type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          producer_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_preferences: {
         Row: {
@@ -215,12 +307,59 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawals: {
+        Row: {
+          amount: number
+          created_at: string
+          fee: number
+          id: string
+          net_amount: number
+          producer_id: string | null
+          status: string | null
+          stripe_payout_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          fee: number
+          id?: string
+          net_amount: number
+          producer_id?: string | null
+          status?: string | null
+          stripe_payout_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          fee?: number
+          id?: string
+          net_amount?: number
+          producer_id?: string | null
+          status?: string | null
+          stripe_payout_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_producer_balance: {
+        Args: { producer_uuid: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 const Cart = () => {
-  const { cartItems, removeFromCart, clearCart } = useCart();
+  const { cartItems, removeFromCart } = useCart();
   const { t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -21,66 +21,24 @@ const Cart = () => {
 
   const total = cartItems.reduce((sum, item) => sum + (item.events?.price || 0), 0);
 
-  const generateQRCode = () => {
-    return `QR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  };
-
   const handleCheckout = async () => {
     if (!user || cartItems.length === 0) return;
 
     setLoading(true);
     try {
-      // Create order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          total_amount: total,
-          status: 'completed'
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Create order items with QR codes
-      const orderItems = cartItems.map(item => ({
-        order_id: order.id,
-        event_id: item.event_id,
-        quantity: item.quantity || 1,
-        price: item.events?.price || 0,
-        qr_code: generateQRCode()
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      // Update sold tickets
-      for (const item of cartItems) {
-        await supabase
-          .from('events')
-          .update({
-            sold_tickets: (item.events?.sold_tickets || 0) + (item.quantity || 1)
-          })
-          .eq('id', item.event_id);
-      }
-
-      // Clear cart
-      await clearCart();
-
-      toast({
-        title: "Compra realizada com sucesso!",
-        description: "Seus ingressos foram enviados por e-mail."
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { cartItems }
       });
 
-      navigate('/my-tickets');
+      if (error) throw error;
+
+      if (data.url) {
+        window.location.href = data.url;
+      }
     } catch (error) {
       console.error('Checkout error:', error);
       toast({
-        title: "Erro na compra",
+        title: "Erro no pagamento",
         description: "Tente novamente.",
         variant: "destructive"
       });
@@ -93,9 +51,9 @@ const Cart = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
+          <Button variant="ghost" onClick={() => navigate('/')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
+            Voltar à tela inicial
           </Button>
           <h1 className="text-3xl font-black">{t('cart.title')}</h1>
         </div>
@@ -167,7 +125,7 @@ const Cart = () => {
                       onClick={handleCheckout}
                       disabled={loading}
                     >
-                      {loading ? 'Processando...' : t('cart.checkout')}
+                      {loading ? 'Processando...' : 'Pagar com Stripe'}
                     </Button>
                   </div>
                 </CardContent>

@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { QrCode, Calendar, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { QrCode, Calendar, MapPin, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import { useNavigate } from 'react-router-dom';
 
 type OrderItem = Tables<'order_items'> & {
   events: Tables<'events'>;
@@ -14,6 +16,7 @@ type OrderItem = Tables<'order_items'> & {
 
 const MyTickets = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +53,13 @@ const MyTickets = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-black mb-8">Meus Ingressos</h1>
+        <div className="flex items-center gap-4 mb-8">
+          <Button variant="ghost" onClick={() => navigate('/')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar à tela inicial
+          </Button>
+          <h1 className="text-3xl font-black">Meus Ingressos</h1>
+        </div>
 
         {tickets.length === 0 ? (
           <Card>

@@ -1,63 +1,60 @@
-import { Ticket } from 'lucide-react';
+
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu"
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-import CartIcon from './CartIcon';
+import { useLanguage } from '@/hooks/useLanguage';
+import { Link, useNavigate } from 'react-router-dom';
+import { Calendar, User, LogIn, Building2 } from 'lucide-react';
 import UserDropdown from './UserDropdown';
+import CartIcon from './CartIcon';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 
 const Navbar = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   return (
-    <nav className="bg-background border-b border-border sticky top-0 z-50">
+    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <Ticket className="h-8 w-8 text-primary mr-3" />
-            <span className="text-2xl font-black text-foreground">ITM Tickets</span>
-          </div>
-          
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  href="#eventos"
-                  className={navigationMenuTriggerStyle()}
-                >
-                  Eventos
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink
-                  href="#contato"
-                  className={navigationMenuTriggerStyle()}
-                >
-                  Contato
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              {user?.email === 'pepedr12@gmail.com' && (
-                <NavigationMenuItem>
-                  <NavigationMenuLink
-                    onClick={() => navigate('/admin/events')}
-                    className={navigationMenuTriggerStyle()}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    Admin
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              )}
-            </NavigationMenuList>
-          </NavigationMenu>
+        <div className="flex h-16 items-center justify-between">
+          <Link to="/" className="flex items-center space-x-2">
+            <Calendar className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl">EventPlatform</span>
+          </Link>
 
           <div className="flex items-center space-x-4">
-            {user && <CartIcon />}
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/producer-auth')}
+              className="hidden md:flex"
+            >
+              <Building2 className="h-4 w-4 mr-2" />
+              Produtoras
+            </Button>
+
+            {user?.email === '2581' && (
+              <Button variant="ghost" onClick={() => navigate('/admin/events')}>
+                Administração
+              </Button>
+            )}
+
             {user ? (
-              <UserDropdown />
+              <div className="flex items-center space-x-2">
+                <CartIcon />
+                <UserDropdown />
+              </div>
             ) : (
               <Button onClick={() => navigate('/auth')}>
-                Entrar
+                <LogIn className="h-4 w-4 mr-2" />
+                {t('auth.login')}
               </Button>
             )}
           </div>

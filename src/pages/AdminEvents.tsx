@@ -1,49 +1,56 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar, Trash2, Users, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Tables } from '@/integrations/supabase/types';
+
+type Event = Tables<'events'>;
+type Producer = Tables<'producers'>;
 
 const AdminEvents = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const [events, setEvents] = useState<Tables<'events'>[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<string | null>(null);
-  const [eventForm, setEventForm] = useState({
+  const [events, setEvents] = useState<Event[]>([]);
+  const [producers, setProducers] = useState<Producer[]>([]);
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     date: '',
     time: '',
     location: '',
     price: '',
-    image: '',
+    capacity: '',
     category: '',
-    capacity: ''
+    image: '',
+    producer_id: ''
   });
-
-  const isAdmin = user?.email === 'pepedr12@gmail.com';
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isAdmin) {
-      loadEvents();
+    if (user?.email !== '2581') {
+      navigate('/');
+      return;
     }
-  }, [isAdmin]);
+    loadEvents();
+    loadProducers();
+  }, [user, navigate]);
 
   const loadEvents = async () => {
     const { data, error } = await supabase
       .from('events')
       .select('*')
       .order('created_at', { ascending: false });
-
+    
     if (error) {
       console.error('Error loading events:', error);
     } else {
@@ -51,148 +58,133 @@ const AdminEvents = () => {
     }
   };
 
-  const resetForm = () => {
-    setEventForm({
-      title: '',
-      description: '',
-      date: '',
-      time: '',
-      location: '',
-      price: '',
-      image: '',
-      category: '',
-      capacity: ''
-    });
-    setEditingEvent(null);
+  const loadProducers = async () => {
+    const { data, error } = await supabase
+      .from('producers')
+      .select('*')
+      .order('name');
+    
+    if (error) {
+      console.error('Error loading producers:', error);
+    } else {
+      setProducers(data || []);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAdmin) return;
+    if (!user) return;
 
     setLoading(true);
-    const eventData = {
-      ...eventForm,
-      price: parseFloat(eventForm.price),
-      capacity: parseInt(eventForm.capacity),
-      created_by: user?.id
-    };
-
-    let error;
-    if (editingEvent) {
-      const { error: updateError } = await supabase
-        .from('events')
-        .update(eventData)
-        .eq('id', editingEvent);
-      error = updateError;
-    } else {
-      const { error: insertError } = await supabase
-        .from('events')
-        .insert(eventData);
-      error = insertError;
-    }
+    
+    const { error } = await supabase.from('events').insert({
+      title: formData.title,
+      description: formData.description,
+      date: formData.date,
+      time: formData.time,
+      location: formData.location,
+      price: parseFloat(formData.price),
+      capacity: parseInt(formData.capacity),
+      category: formData.category,
+      image: formData.image,
+      producer_id: formData.producer_id || null,
+      created_by: user.id
+    });
 
     if (error) {
       toast({
-        title: "Erro ao salvar evento",
+        title: "Erro ao criar evento",
         description: error.message,
         variant: "destructive"
       });
     } else {
       toast({
-        title: editingEvent ? "Evento atualizado" : "Evento criado",
-        description: "Operação realizada com sucesso."
+        title: "Evento criado",
+        description: "Evento criado com sucesso."
       });
-      resetForm();
+      setFormData({
+        title: '',
+        description: '',
+        date: '',
+        time: '',
+        location: '',
+        price: '',
+        capacity: '',
+        category: '',
+        image: '',
+        producer_id: ''
+      });
       loadEvents();
     }
+    
     setLoading(false);
   };
 
-  const handleEdit = (event: Tables<'events'>) => {
-    setEventForm({
-      title: event.title,
-      description: event.description || '',
-      date: event.date,
-      time: event.time,
-      location: event.location,
-      price: event.price.toString(),
-      image: event.image || '',
-      category: event.category,
-      capacity: event.capacity.toString()
-    });
-    setEditingEvent(event.id);
-  };
-
-  const handleDelete = async (eventId: string) => {
-    if (!isAdmin || !confirm('Tem certeza que deseja excluir este evento?')) return;
-
+  const handleDelete = async (id: string) => {
     const { error } = await supabase
       .from('events')
       .delete()
-      .eq('id', eventId);
+      .eq('id', id);
 
     if (error) {
       toast({
-        title: "Erro ao excluir evento",
+        title: "Erro ao deletar",
         description: error.message,
         variant: "destructive"
       });
     } else {
       toast({
-        title: "Evento excluído",
+        title: "Evento deletado",
         description: "Evento removido com sucesso."
       });
       loadEvents();
     }
   };
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card>
-          <CardContent className="text-center py-12">
-            <p className="text-muted-foreground">Acesso restrito a administradores.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  if (user?.email !== '2581') {
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-black">Gerenciar Eventos</h1>
-          <Button onClick={resetForm}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Evento
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={() => navigate('/')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar à tela inicial
+            </Button>
+            <h1 className="text-3xl font-black">Administração</h1>
+          </div>
+          <Button onClick={() => navigate('/admin/producers')}>
+            <Users className="h-4 w-4 mr-2" />
+            Gerenciar Produtoras
           </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
-              <CardTitle>{editingEvent ? 'Editar Evento' : 'Criar Evento'}</CardTitle>
+              <CardTitle>Criar Novo Evento</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Nome do Evento</Label>
+                  <Label htmlFor="title">Título</Label>
                   <Input
                     id="title"
-                    value={eventForm.title}
-                    onChange={(e) => setEventForm({...eventForm, title: e.target.value})}
+                    value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})}
                     required
                   />
                 </div>
-
+                
                 <div className="space-y-2">
                   <Label htmlFor="description">Descrição</Label>
                   <Textarea
                     id="description"
-                    value={eventForm.description}
-                    onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
                   />
                 </div>
 
@@ -202,18 +194,19 @@ const AdminEvents = () => {
                     <Input
                       id="date"
                       type="date"
-                      value={eventForm.date}
-                      onChange={(e) => setEventForm({...eventForm, date: e.target.value})}
+                      value={formData.date}
+                      onChange={(e) => setFormData({...formData, date: e.target.value})}
                       required
                     />
                   </div>
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="time">Hora</Label>
+                    <Label htmlFor="time">Horário</Label>
                     <Input
                       id="time"
                       type="time"
-                      value={eventForm.time}
-                      onChange={(e) => setEventForm({...eventForm, time: e.target.value})}
+                      value={formData.time}
+                      onChange={(e) => setFormData({...formData, time: e.target.value})}
                       required
                     />
                   </div>
@@ -223,31 +216,32 @@ const AdminEvents = () => {
                   <Label htmlFor="location">Local</Label>
                   <Input
                     id="location"
-                    value={eventForm.location}
-                    onChange={(e) => setEventForm({...eventForm, location: e.target.value})}
+                    value={formData.location}
+                    onChange={(e) => setFormData({...formData, location: e.target.value})}
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="price">Preço (R$)</Label>
+                    <Label htmlFor="price">Preço</Label>
                     <Input
                       id="price"
                       type="number"
                       step="0.01"
-                      value={eventForm.price}
-                      onChange={(e) => setEventForm({...eventForm, price: e.target.value})}
+                      value={formData.price}
+                      onChange={(e) => setFormData({...formData, price: e.target.value})}
                       required
                     />
                   </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="capacity">Capacidade</Label>
                     <Input
                       id="capacity"
                       type="number"
-                      value={eventForm.capacity}
-                      onChange={(e) => setEventForm({...eventForm, capacity: e.target.value})}
+                      value={formData.capacity}
+                      onChange={(e) => setFormData({...formData, capacity: e.target.value})}
                       required
                     />
                   </div>
@@ -255,17 +249,32 @@ const AdminEvents = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="category">Categoria</Label>
-                  <Select value={eventForm.category} onValueChange={(value) => setEventForm({...eventForm, category: value})}>
+                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="música">Música</SelectItem>
-                      <SelectItem value="workshop">Workshop</SelectItem>
-                      <SelectItem value="entretenimento">Entretenimento</SelectItem>
-                      <SelectItem value="tecnologia">Tecnologia</SelectItem>
-                      <SelectItem value="gastronomia">Gastronomia</SelectItem>
-                      <SelectItem value="palestra">Palestra</SelectItem>
+                      <SelectItem value="show">Show</SelectItem>
+                      <SelectItem value="teatro">Teatro</SelectItem>
+                      <SelectItem value="festa">Festa</SelectItem>
+                      <SelectItem value="esporte">Esporte</SelectItem>
+                      <SelectItem value="outros">Outros</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="producer">Produtora</Label>
+                  <Select value={formData.producer_id} onValueChange={(value) => setFormData({...formData, producer_id: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma produtora (opcional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {producers.map((producer) => (
+                        <SelectItem key={producer.id} value={producer.id}>
+                          {producer.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -275,54 +284,49 @@ const AdminEvents = () => {
                   <Input
                     id="image"
                     type="url"
-                    value={eventForm.image}
-                    onChange={(e) => setEventForm({...eventForm, image: e.target.value})}
-                    placeholder="https://example.com/image.jpg"
+                    value={formData.image}
+                    onChange={(e) => setFormData({...formData, image: e.target.value})}
                   />
                 </div>
-
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={loading} className="flex-1">
-                    {loading ? 'Salvando...' : editingEvent ? 'Atualizar' : 'Criar'}
-                  </Button>
-                  {editingEvent && (
-                    <Button type="button" variant="outline" onClick={resetForm}>
-                      Cancelar
-                    </Button>
-                  )}
-                </div>
+                
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Criando...' : 'Criar Evento'}
+                </Button>
               </form>
             </CardContent>
           </Card>
 
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold">Eventos Criados</h2>
-            {events.map((event) => (
-              <Card key={event.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold">{event.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {event.date} - {event.location}
-                      </p>
-                      <p className="text-sm font-medium">
-                        R$ {event.price.toFixed(2)} - {event.sold_tickets || 0}/{event.capacity} vendidos
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Eventos Criados</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {events.length === 0 ? (
+                  <p className="text-muted-foreground">Nenhum evento criado</p>
+                ) : (
+                  events.map((event) => (
+                    <div key={event.id} className="flex items-center justify-between p-4 border rounded">
+                      <div>
+                        <h3 className="font-semibold">{event.title}</h3>
+                        <p className="text-sm text-muted-foreground">{event.date} - {event.location}</p>
+                        <p className="text-sm font-medium">
+                          R$ {event.price?.toFixed(2).replace('.', ',')} - {event.sold_tickets || 0}/{event.capacity} vendidos
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(event.id)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
