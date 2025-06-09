@@ -1,10 +1,12 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Users, ShoppingCart } from 'lucide-react';
 import ProtectedButton from './ProtectedButton';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { useCart } from '@/hooks/use-cart';
+import { useNavigate } from 'react-router-dom';
 
 interface Event {
   id: number;
@@ -26,6 +28,9 @@ interface EventCardProps {
 
 const EventCard = ({ event }: EventCardProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -40,12 +45,14 @@ const EventCard = ({ event }: EventCardProps) => {
   const isLowStock = availableTickets <= 50;
   const isSoldOut = availableTickets <= 0;
 
-  const handleBuyTicket = () => {
-    toast({
-      title: "Redirecionando para compra",
-      description: `Você será redirecionado para comprar ingressos do evento: ${event.title}`
-    });
-    // Aqui você implementaria a lógica de redirecionamento para a página de compra
+  const handleBuyTicket = async () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    await addToCart(event.id.toString());
+    navigate('/cart');
   };
 
   return (
@@ -112,14 +119,14 @@ const EventCard = ({ event }: EventCardProps) => {
       </CardContent>
       
       <CardFooter>
-        <ProtectedButton 
+        <Button 
           className="w-full bg-primary hover:bg-primary/90 text-white font-bold"
           disabled={isSoldOut}
           onClick={handleBuyTicket}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
           {isSoldOut ? 'Esgotado' : 'Comprar Ingresso'}
-        </ProtectedButton>
+        </Button>
       </CardFooter>
     </Card>
   );

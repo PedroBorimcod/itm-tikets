@@ -1,161 +1,66 @@
-
-import { useState } from 'react';
+import { Ticket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, User, ShoppingCart, Ticket, LogOut } from 'lucide-react';
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu"
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import CartIcon from './CartIcon';
+import UserDropdown from './UserDropdown';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
-  const navItems = [
-    { label: 'Início', href: '#inicio' },
-    { label: 'Eventos', href: '#eventos' },
-    { label: 'Comprar', href: '#comprar' },
-    { label: 'Contato', href: '#contato' }
-  ];
-
-  const handleAuthClick = () => {
-    if (user) {
-      signOut();
-    } else {
-      navigate('/auth');
-    }
-  };
-
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="bg-background border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <Ticket className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-black text-foreground">
-              ITM Tikets
-            </span>
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <Ticket className="h-8 w-8 text-primary mr-3" />
+            <span className="text-2xl font-black text-foreground">ITM Tickets</span>
           </div>
+          
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  href="#eventos"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  Eventos
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  href="#contato"
+                  className={navigationMenuTriggerStyle()}
+                >
+                  Contato
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              {user?.email === 'pepedr12@gmail.com' && (
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    onClick={() => navigate('/admin/events')}
+                    className={navigationMenuTriggerStyle()}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    Admin
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              )}
+            </NavigationMenuList>
+          </NavigationMenu>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="text-sm font-bold transition-colors hover:text-primary text-foreground"
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
-
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="text-foreground hover:text-primary">
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Carrinho
-            </Button>
-            
+          <div className="flex items-center space-x-4">
+            {user && <CartIcon />}
             {user ? (
-              <>
-                <span className="text-sm font-medium text-foreground">
-                  Olá, {user.user_metadata?.full_name || user.email}
-                </span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleAuthClick}
-                  className="border-foreground text-foreground hover:bg-primary hover:text-white"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
-              </>
+              <UserDropdown />
             ) : (
-              <>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleAuthClick}
-                  className="border-foreground text-foreground hover:bg-primary hover:text-white"
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  Entrar
-                </Button>
-                <Button 
-                  size="sm" 
-                  onClick={() => navigate('/auth')}
-                  className="bg-primary hover:bg-primary/90 text-white font-bold"
-                >
-                  Cadastrar
-                </Button>
-              </>
+              <Button onClick={() => navigate('/auth')}>
+                Entrar
+              </Button>
             )}
           </div>
-
-          {/* Mobile Menu */}
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="sm">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-64">
-              <div className="flex flex-col space-y-4 mt-8">
-                {navItems.map((item) => (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    className="text-sm font-bold transition-colors hover:text-primary p-2 text-foreground"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {item.label}
-                  </a>
-                ))}
-                <div className="border-t pt-4 space-y-2">
-                  <Button variant="ghost" className="w-full justify-start text-foreground hover:text-primary">
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Carrinho
-                  </Button>
-                  
-                  {user ? (
-                    <>
-                      <div className="px-2 py-1 text-sm font-medium text-foreground">
-                        {user.user_metadata?.full_name || user.email}
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        className="w-full justify-start border-foreground text-foreground hover:bg-primary hover:text-white"
-                        onClick={handleAuthClick}
-                      >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sair
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button 
-                        variant="outline" 
-                        className="w-full justify-start border-foreground text-foreground hover:bg-primary hover:text-white"
-                        onClick={handleAuthClick}
-                      >
-                        <User className="h-4 w-4 mr-2" />
-                        Entrar
-                      </Button>
-                      <Button 
-                        className="w-full bg-primary hover:bg-primary/90 text-white font-bold"
-                        onClick={() => navigate('/auth')}
-                      >
-                        Cadastrar
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
         </div>
       </div>
     </nav>
