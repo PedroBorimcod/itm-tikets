@@ -22,16 +22,20 @@ export function ProducerAuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     // Check if producer is logged in from localStorage
-    const storedProducer = localStorage.getItem('producer');
+    const storedProducer = localStorage.getItem('producer_session');
     if (storedProducer) {
-      setProducer(JSON.parse(storedProducer));
+      try {
+        setProducer(JSON.parse(storedProducer));
+      } catch (error) {
+        console.error('Error parsing producer session:', error);
+        localStorage.removeItem('producer_session');
+      }
     }
     setLoading(false);
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      // For now, we'll use a simple check. In production, use proper password hashing
       const { data: producers, error } = await supabase
         .from('producers')
         .select('*')
@@ -42,13 +46,13 @@ export function ProducerAuthProvider({ children }: { children: React.ReactNode }
         return { error: { message: 'Credenciais inválidas' } };
       }
 
-      // Simple password check (in production, use bcrypt)
+      // Simple password check (in production, use proper password hashing)
       if (producers.password_hash !== password) {
         return { error: { message: 'Credenciais inválidas' } };
       }
 
       setProducer(producers);
-      localStorage.setItem('producer', JSON.stringify(producers));
+      localStorage.setItem('producer_session', JSON.stringify(producers));
       return { error: null };
     } catch (error) {
       return { error };
@@ -57,7 +61,7 @@ export function ProducerAuthProvider({ children }: { children: React.ReactNode }
 
   const signOut = () => {
     setProducer(null);
-    localStorage.removeItem('producer');
+    localStorage.removeItem('producer_session');
   };
 
   return (
