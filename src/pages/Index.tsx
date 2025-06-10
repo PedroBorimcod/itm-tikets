@@ -1,11 +1,13 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarDays, MapPin, Users, Search, Filter } from 'lucide-react';
+import { CalendarDays, MapPin, Users, Search, Filter, Ticket } from 'lucide-react';
 import EventCard from '@/components/EventCard';
+import EventDetailsModal from '@/components/EventDetailsModal';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +20,8 @@ const Index = () => {
   const [selectedDate, setSelectedDate] = useState('all');
   const [events, setEvents] = useState<Tables<'events'>[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -36,6 +40,23 @@ const Index = () => {
       setEvents(data || []);
     }
     setLoading(false);
+  };
+
+  const handleEventClick = (event: Tables<'events'>) => {
+    setSelectedEvent({
+      id: parseInt(event.id),
+      title: event.title,
+      description: event.description || '',
+      date: event.date,
+      time: event.time,
+      location: event.location,
+      price: Number(event.price),
+      image: event.image || "/placeholder.svg",
+      category: event.category,
+      capacity: event.capacity,
+      soldTickets: event.sold_tickets || 0
+    });
+    setIsModalOpen(true);
   };
 
   // Mock data para eventos
@@ -83,8 +104,11 @@ const Index = () => {
       {/* Seção de Filtros */}
       <section id="eventos" className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-black text-foreground mb-4">{t('events.title')}</h2>
-          <p className="text-muted-foreground font-medium">{t('events.description')}</p>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Ticket className="h-8 w-8 text-primary" />
+            <h2 className="text-3xl font-black text-foreground">ITM TIKETS</h2>
+          </div>
+          <p className="text-muted-foreground font-medium">Descubra os melhores eventos e garante seu ingresso!</p>
         </div>
         
         <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -128,19 +152,21 @@ const Index = () => {
         {/* Grid de Eventos */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEvents.map(event => (
-            <EventCard key={event.id} event={{
-              id: parseInt(event.id),
-              title: event.title,
-              description: event.description || '',
-              date: event.date,
-              time: event.time,
-              location: event.location,
-              price: Number(event.price),
-              image: event.image || "/placeholder.svg",
-              category: event.category,
-              capacity: event.capacity,
-              soldTickets: event.sold_tickets || 0
-            }} />
+            <div key={event.id} onClick={() => handleEventClick(event)} className="cursor-pointer">
+              <EventCard event={{
+                id: parseInt(event.id),
+                title: event.title,
+                description: event.description || '',
+                date: event.date,
+                time: event.time,
+                location: event.location,
+                price: Number(event.price),
+                image: event.image || "/placeholder.svg",
+                category: event.category,
+                capacity: event.capacity,
+                soldTickets: event.sold_tickets || 0
+              }} />
+            </div>
           ))}
         </div>
 
@@ -155,6 +181,13 @@ const Index = () => {
           </div>
         )}
       </section>
+
+      {/* Modal de detalhes do evento */}
+      <EventDetailsModal 
+        event={selectedEvent}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
 
       {/* Seção de Estatísticas */}
       <section className="bg-foreground py-16">

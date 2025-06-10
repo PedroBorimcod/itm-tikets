@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       cart_items: {
         Row: {
+          cart_items_user_event_unique: string | null
           created_at: string
           event_id: string | null
           id: string
@@ -18,6 +19,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          cart_items_user_event_unique?: string | null
           created_at?: string
           event_id?: string | null
           id?: string
@@ -25,6 +27,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          cart_items_user_event_unique?: string | null
           created_at?: string
           event_id?: string | null
           id?: string
@@ -359,6 +362,10 @@ export type Database = {
       calculate_producer_balance: {
         Args: { producer_uuid: string }
         Returns: number
+      }
+      delete_producer_and_user: {
+        Args: { user_email: string }
+        Returns: undefined
       }
     }
     Enums: {

@@ -4,17 +4,9 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Link, useNavigate } from 'react-router-dom';
-import { Calendar, User, LogIn, Building2 } from 'lucide-react';
+import { Ticket, User, LogIn, Building2 } from 'lucide-react';
 import UserDropdown from './UserDropdown';
 import CartIcon from './CartIcon';
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from '@/components/ui/navigation-menu';
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -26,8 +18,8 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
-            <Calendar className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">EventPlatform</span>
+            <Ticket className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl">ITM TIKETS</span>
           </Link>
 
           <div className="flex items-center space-x-4">

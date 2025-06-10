@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Users, ShoppingCart } from 'lucide-react';
-import ProtectedButton from './ProtectedButton';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
@@ -46,7 +45,9 @@ const EventCard = ({ event }: EventCardProps) => {
   const isLowStock = availableTickets <= 50;
   const isSoldOut = availableTickets <= 0;
 
-  const handleBuyTicket = async () => {
+  const handleBuyTicket = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evita que abra o modal quando clicar no botão
+    
     if (!user) {
       navigate('/auth');
       return;
@@ -57,7 +58,7 @@ const EventCard = ({ event }: EventCardProps) => {
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow border-2 border-border">
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 border-border hover:border-primary cursor-pointer">
       <div className="relative">
         <img 
           src={event.image} 
@@ -91,7 +92,7 @@ const EventCard = ({ event }: EventCardProps) => {
         <CardTitle className="font-black text-foreground line-clamp-2">
           {event.title}
         </CardTitle>
-        <CardDescription className="font-medium">
+        <CardDescription className="font-medium line-clamp-2">
           {event.description}
         </CardDescription>
       </CardHeader>
@@ -110,7 +111,7 @@ const EventCard = ({ event }: EventCardProps) => {
         <div className="flex items-center text-sm text-muted-foreground">
           <Users className="h-4 w-4 mr-2 text-primary" />
           <span className="font-medium">
-            {availableTickets} ingressos disponíveis de {event.capacity}
+            {availableTickets} ingressos disponíveis
           </span>
         </div>
         
