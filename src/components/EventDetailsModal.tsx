@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, MapPin, Clock, Users, ShoppingCart, X } from 'lucide-react';
+import { CalendarDays, MapPin, Clock, Users, ShoppingCart, X, Plus, Minus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +39,7 @@ const EventDetailsModal = ({ event, isOpen, onClose }: EventDetailsModalProps) =
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   if (!event) return null;
@@ -57,7 +58,13 @@ const EventDetailsModal = ({ event, isOpen, onClose }: EventDetailsModalProps) =
   const isLowStock = availableTickets <= 50;
   const isSoldOut = availableTickets <= 0;
 
-  const handleBuyTicket = async () => {
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity >= 1 && newQuantity <= availableTickets) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const handleAddToCart = async () => {
     if (!user) {
       navigate('/auth');
       onClose();
@@ -66,16 +73,27 @@ const EventDetailsModal = ({ event, isOpen, onClose }: EventDetailsModalProps) =
 
     setIsAddingToCart(true);
     try {
-      await addToCart(event.id.toString());
+      await addToCart(event.id.toString(), quantity);
       toast({
-        title: "Ingresso adicionado!",
-        description: "Vá para o carrinho para finalizar a compra."
+        title: "Ingressos adicionados!",
+        description: `${quantity} ingresso(s) adicionado(s) ao carrinho.`,
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => {
+              onClose();
+              navigate('/cart');
+            }}
+          >
+            Ver Carrinho
+          </Button>
+        )
       });
       onClose();
-      navigate('/cart');
     } catch (error) {
       toast({
-        title: "Erro ao adicionar ingresso",
+        title: "Erro ao adicionar ingressos",
         description: "Tente novamente.",
         variant: "destructive"
       });
@@ -180,15 +198,46 @@ const EventDetailsModal = ({ event, isOpen, onClose }: EventDetailsModalProps) =
               </div>
             </div>
 
-            {/* Botão de compra */}
+            {/* Seleção de quantidade e botão de compra */}
             <div className="flex flex-col gap-4">
+              {!isSoldOut && (
+                <div className="flex items-center gap-4 p-4 border rounded-lg">
+                  <span className="font-medium">Quantidade:</span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleQuantityChange(quantity - 1)}
+                      disabled={quantity <= 1}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                    <span className="font-bold text-lg px-3">{quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleQuantityChange(quantity + 1)}
+                      disabled={quantity >= availableTickets}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <div className="ml-auto text-right">
+                    <div className="text-sm text-muted-foreground">Total:</div>
+                    <div className="text-xl font-bold text-primary">
+                      R$ {(event.price * quantity).toFixed(2).replace('.', ',')}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Button 
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold text-lg"
                 disabled={isSoldOut || isAddingToCart}
-                onClick={handleBuyTicket}
+                onClick={handleAddToCart}
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
-                {isAddingToCart ? 'Adicionando...' : isSoldOut ? 'Esgotado' : 'Comprar Ingresso'}
+                {isAddingToCart ? 'Adicionando...' : isSoldOut ? 'Esgotado' : `Adicionar ${quantity} Ingresso(s) ao Carrinho`}
               </Button>
               
               {!user && (

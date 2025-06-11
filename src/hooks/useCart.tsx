@@ -12,8 +12,10 @@ type CartItem = Tables<'cart_items'> & {
 interface CartContextType {
   cartItems: CartItem[];
   cartCount: number;
-  addToCart: (eventId: string) => Promise<void>;
+  totalAmount: number;
+  addToCart: (eventId: string, quantity?: number) => Promise<void>;
   removeFromCart: (eventId: string) => Promise<void>;
+  updateQuantity: (eventId: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   loading: boolean;
 }
@@ -59,15 +61,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   };
 
-  const addToCart = async (eventId: string) => {
+  const addToCart = async (eventId: string, quantity: number = 1) => {
     if (!user) return;
+
+    // Verificar se o item já existe no carrinho
+    const existingItem = cartItems.find(item => item.event_id === parseInt(eventId));
+    
+    if (existingItem) {
+      // Se já existe, atualizar a quantidade
+      await updateQuantity(eventId, existingItem.quantity + quantity);
+      return;
+    }
 
     const { error } = await supabase
       .from('cart_items')
-      .upsert({
+      .insert({
         user_id: user.id,
-        event_id: eventId,
-        quantity: 1
+        event_id: parseInt(eventId),
+        quantity: quantity
       });
 
     if (error) {
@@ -86,6 +97,32 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateQuantity = async (eventId: string, quantity: number) => {
+    if (!user) return;
+
+    if (quantity <= 0) {
+      await removeFromCart(eventId);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('cart_items')
+      .update({ quantity })
+      .eq('user_id', user.id)
+      .eq('event_id', parseInt(eventId));
+
+    if (error) {
+      console.error('Error updating quantity:', error);
+      toast({
+        title: "Erro ao atualizar quantidade",
+        description: "Tente novamente.",
+        variant: "destructive"
+      });
+    } else {
+      loadCartItems();
+    }
+  };
+
   const removeFromCart = async (eventId: string) => {
     if (!user) return;
 
@@ -93,12 +130,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       .from('cart_items')
       .delete()
       .eq('user_id', user.id)
-      .eq('event_id', eventId);
+      .eq('event_id', parseInt(eventId));
 
     if (error) {
       console.error('Error removing from cart:', error);
+      toast({
+        title: "Erro ao remover do carrinho",
+        description: "Tente novamente.",
+        variant: "destructive"
+      });
     } else {
       loadCartItems();
+      toast({
+        title: "Item removido do carrinho",
+        description: "O item foi removido com sucesso."
+      });
     }
   };
 
@@ -117,12 +163,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalAmount = cartItems.reduce((sum, item) => sum + (item.events?.price || 0) * item.quantity, 0);
+
   return (
     <CartContext.Provider value={{
       cartItems,
-      cartCount: cartItems.length,
+      cartCount,
+      totalAmount,
       addToCart,
       removeFromCart,
+      updateQuantity,
       clearCart,
       loading
     }}>

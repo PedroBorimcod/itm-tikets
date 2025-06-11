@@ -53,8 +53,20 @@ const EventCard = ({ event }: EventCardProps) => {
       return;
     }
 
-    await addToCart(event.id.toString());
-    navigate('/cart');
+    await addToCart(event.id.toString(), 1);
+    toast({
+      title: "Ingresso adicionado!",
+      description: "Vá para o carrinho para finalizar a compra.",
+      action: (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => navigate('/cart')}
+        >
+          Ver Carrinho
+        </Button>
+      )
+    });
   };
 
   return (
@@ -127,7 +139,7 @@ const EventCard = ({ event }: EventCardProps) => {
           onClick={handleBuyTicket}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
-          {isSoldOut ? 'Esgotado' : 'Comprar Ingresso'}
+          {isSoldOut ? 'Esgotado' : 'Adicionar ao Carrinho'}
         </Button>
       </CardFooter>
     </Card>

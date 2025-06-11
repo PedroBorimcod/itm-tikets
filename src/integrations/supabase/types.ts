@@ -11,38 +11,27 @@ export type Database = {
     Tables: {
       cart_items: {
         Row: {
-          cart_items_user_event_unique: string | null
-          created_at: string
-          event_id: string | null
-          id: string
-          quantity: number | null
+          event_id: number
+          id: number
+          inserted_at: string | null
+          quantity: number
           user_id: string | null
         }
         Insert: {
-          cart_items_user_event_unique?: string | null
-          created_at?: string
-          event_id?: string | null
-          id?: string
-          quantity?: number | null
+          event_id: number
+          id?: number
+          inserted_at?: string | null
+          quantity?: number
           user_id?: string | null
         }
         Update: {
-          cart_items_user_event_unique?: string | null
-          created_at?: string
-          event_id?: string | null
-          id?: string
-          quantity?: number | null
+          event_id?: number
+          id?: number
+          inserted_at?: string | null
+          quantity?: number
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "cart_items_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       events: {
         Row: {
@@ -159,6 +148,7 @@ export type Database = {
           created_at: string
           id: string
           status: string | null
+          stripe_session_id: string | null
           total_amount: number
           updated_at: string
           user_id: string | null
@@ -167,6 +157,7 @@ export type Database = {
           created_at?: string
           id?: string
           status?: string | null
+          stripe_session_id?: string | null
           total_amount: number
           updated_at?: string
           user_id?: string | null
@@ -175,6 +166,7 @@ export type Database = {
           created_at?: string
           id?: string
           status?: string | null
+          stripe_session_id?: string | null
           total_amount?: number
           updated_at?: string
           user_id?: string | null
