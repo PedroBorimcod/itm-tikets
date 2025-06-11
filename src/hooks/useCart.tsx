@@ -41,10 +41,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     
     setLoading(true);
     try {
-      // Buscar itens do carrinho
+      // Buscar itens do carrinho com join para events
       const { data: cartData, error: cartError } = await supabase
         .from('cart_items')
-        .select('*')
+        .select(`
+          *,
+          events (*)
+        `)
         .eq('user_id', user.id);
 
       if (cartError) {
@@ -57,28 +60,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Buscar dados dos eventos separadamente
-      if (cartData && cartData.length > 0) {
-        const eventIds = cartData.map(item => item.event_id.toString());
-        const { data: eventsData, error: eventsError } = await supabase
-          .from('events')
-          .select('*')
-          .in('id', eventIds);
-
-        if (eventsError) {
-          console.error('Error loading events:', eventsError);
-        }
-
-        // Combinar dados do carrinho com dados dos eventos
-        const cartItemsWithEvents = cartData.map(cartItem => ({
-          ...cartItem,
-          events: eventsData?.find(event => event.id === cartItem.event_id.toString()) || null
-        }));
-
-        setCartItems(cartItemsWithEvents);
-      } else {
-        setCartItems([]);
-      }
+      setCartItems(cartData || []);
     } catch (error) {
       console.error('Error in loadCartItems:', error);
     } finally {
@@ -89,9 +71,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addToCart = async (eventId: string, quantity: number = 1) => {
     if (!user) return;
 
+    console.log('Adding to cart:', { eventId, quantity, userId: user.id });
+
     try {
       // Verificar se o item já existe no carrinho
-      const existingItem = cartItems.find(item => item.event_id.toString() === eventId);
+      const existingItem = cartItems.find(item => item.event_id?.toString() === eventId);
       
       if (existingItem) {
         // Se já existe, atualizar a quantidade
@@ -103,7 +87,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         .from('cart_items')
         .insert({
           user_id: user.id,
-          event_id: parseInt(eventId),
+          event_id: eventId,
           quantity: quantity
         });
 
@@ -138,7 +122,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       .from('cart_items')
       .update({ quantity })
       .eq('user_id', user.id)
-      .eq('event_id', parseInt(eventId));
+      .eq('event_id', eventId);
 
     if (error) {
       console.error('Error updating quantity:', error);
@@ -159,7 +143,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       .from('cart_items')
       .delete()
       .eq('user_id', user.id)
-      .eq('event_id', parseInt(eventId));
+      .eq('event_id', eventId);
 
     if (error) {
       console.error('Error removing from cart:', error);

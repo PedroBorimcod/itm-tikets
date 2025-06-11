@@ -103,7 +103,7 @@ const Cart = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleQuantityChange(item.event_id.toString(), item.quantity - 1)}
+                              onClick={() => handleQuantityChange(item.event_id?.toString() || '', item.quantity - 1)}
                               disabled={item.quantity <= 1}
                             >
                               <Minus className="h-3 w-3" />
@@ -112,7 +112,7 @@ const Cart = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleQuantityChange(item.event_id.toString(), item.quantity + 1)}
+                              onClick={() => handleQuantityChange(item.event_id?.toString() || '', item.quantity + 1)}
                             >
                               <Plus className="h-3 w-3" />
                             </Button>
@@ -131,7 +131,7 @@ const Cart = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeFromCart(item.event_id.toString())}
+                          onClick={() => removeFromCart(item.event_id?.toString() || '')}
                           className="mt-2 text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
