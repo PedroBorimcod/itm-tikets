@@ -53,20 +53,29 @@ const EventCard = ({ event }: EventCardProps) => {
       return;
     }
 
-    await addToCart(event.id.toString(), 1);
-    toast({
-      title: "Ingresso adicionado!",
-      description: "Vá para o carrinho para finalizar a compra.",
-      action: (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => navigate('/cart')}
-        >
-          Ver Carrinho
-        </Button>
-      )
-    });
+    try {
+      await addToCart(event.id.toString(), 1);
+      toast({
+        title: "Ingresso adicionado!",
+        description: "Vá para o carrinho para finalizar a compra.",
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/cart')}
+          >
+            Ver Carrinho
+          </Button>
+        )
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast({
+        title: "Erro ao adicionar ao carrinho",
+        description: "Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

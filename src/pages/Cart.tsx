@@ -90,20 +90,20 @@ const Cart = () => {
                     <div className="flex items-center gap-4">
                       <img 
                         src={item.events?.image || "/placeholder.svg"} 
-                        alt={item.events?.title}
+                        alt={item.events?.title || "Evento"}
                         className="w-20 h-20 object-cover rounded"
                       />
                       <div className="flex-1">
-                        <h3 className="font-bold text-lg">{item.events?.title}</h3>
-                        <p className="text-muted-foreground">{item.events?.location}</p>
-                        <Badge variant="secondary">{item.events?.category}</Badge>
+                        <h3 className="font-bold text-lg">{item.events?.title || "Evento não encontrado"}</h3>
+                        <p className="text-muted-foreground">{item.events?.location || ""}</p>
+                        <Badge variant="secondary">{item.events?.category || ""}</Badge>
                         <div className="flex items-center mt-2 gap-3">
                           <span className="text-sm font-medium">Quantidade:</span>
                           <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleQuantityChange(item.event_id!.toString(), item.quantity - 1)}
+                              onClick={() => handleQuantityChange(item.event_id.toString(), item.quantity - 1)}
                               disabled={item.quantity <= 1}
                             >
                               <Minus className="h-3 w-3" />
@@ -112,7 +112,7 @@ const Cart = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleQuantityChange(item.event_id!.toString(), item.quantity + 1)}
+                              onClick={() => handleQuantityChange(item.event_id.toString(), item.quantity + 1)}
                             >
                               <Plus className="h-3 w-3" />
                             </Button>
@@ -122,7 +122,7 @@ const Cart = () => {
                       <div className="text-right">
                         <p className="text-sm text-muted-foreground">Preço unitário:</p>
                         <p className="text-lg font-bold text-primary">
-                          R$ {item.events?.price?.toFixed(2).replace('.', ',')}
+                          R$ {(item.events?.price || 0).toFixed(2).replace('.', ',')}
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">Subtotal:</p>
                         <p className="text-xl font-bold text-primary">
@@ -131,7 +131,7 @@ const Cart = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeFromCart(item.event_id!.toString())}
+                          onClick={() => removeFromCart(item.event_id.toString())}
                           className="mt-2 text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
@@ -154,7 +154,7 @@ const Cart = () => {
                     <div className="space-y-2">
                       {cartItems.map((item) => (
                         <div key={item.id} className="flex justify-between text-sm">
-                          <span>{item.events?.title} (x{item.quantity})</span>
+                          <span>{item.events?.title || "Evento"} (x{item.quantity})</span>
                           <span>R$ {((item.events?.price || 0) * item.quantity).toFixed(2).replace('.', ',')}</span>
                         </div>
                       ))}

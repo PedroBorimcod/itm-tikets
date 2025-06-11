@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tables } from '@/integrations/supabase/types';
 
 type CartItem = Tables<'cart_items'> & {
-  events: Tables<'events'>;
+  events: Tables<'events'> | null;
 };
 
 interface CartContextType {
@@ -40,60 +40,89 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     
     setLoading(true);
-    const { data, error } = await supabase
-      .from('cart_items')
-      .select(`
-        *,
-        events (*)
-      `)
-      .eq('user_id', user.id);
+    try {
+      // Buscar itens do carrinho
+      const { data: cartData, error: cartError } = await supabase
+        .from('cart_items')
+        .select('*')
+        .eq('user_id', user.id);
 
-    if (error) {
-      console.error('Error loading cart:', error);
-      toast({
-        title: "Erro ao carregar carrinho",
-        description: "Tente novamente.",
-        variant: "destructive"
-      });
-    } else {
-      setCartItems(data || []);
+      if (cartError) {
+        console.error('Error loading cart:', cartError);
+        toast({
+          title: "Erro ao carregar carrinho",
+          description: "Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Buscar dados dos eventos separadamente
+      if (cartData && cartData.length > 0) {
+        const eventIds = cartData.map(item => item.event_id.toString());
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('events')
+          .select('*')
+          .in('id', eventIds);
+
+        if (eventsError) {
+          console.error('Error loading events:', eventsError);
+        }
+
+        // Combinar dados do carrinho com dados dos eventos
+        const cartItemsWithEvents = cartData.map(cartItem => ({
+          ...cartItem,
+          events: eventsData?.find(event => event.id === cartItem.event_id.toString()) || null
+        }));
+
+        setCartItems(cartItemsWithEvents);
+      } else {
+        setCartItems([]);
+      }
+    } catch (error) {
+      console.error('Error in loadCartItems:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const addToCart = async (eventId: string, quantity: number = 1) => {
     if (!user) return;
 
-    // Verificar se o item já existe no carrinho
-    const existingItem = cartItems.find(item => item.event_id === parseInt(eventId));
-    
-    if (existingItem) {
-      // Se já existe, atualizar a quantidade
-      await updateQuantity(eventId, existingItem.quantity + quantity);
-      return;
-    }
+    try {
+      // Verificar se o item já existe no carrinho
+      const existingItem = cartItems.find(item => item.event_id.toString() === eventId);
+      
+      if (existingItem) {
+        // Se já existe, atualizar a quantidade
+        await updateQuantity(eventId, existingItem.quantity + quantity);
+        return;
+      }
 
-    const { error } = await supabase
-      .from('cart_items')
-      .insert({
-        user_id: user.id,
-        event_id: parseInt(eventId),
-        quantity: quantity
-      });
+      const { error } = await supabase
+        .from('cart_items')
+        .insert({
+          user_id: user.id,
+          event_id: parseInt(eventId),
+          quantity: quantity
+        });
 
-    if (error) {
-      console.error('Error adding to cart:', error);
-      toast({
-        title: "Erro ao adicionar ao carrinho",
-        description: "Tente novamente.",
-        variant: "destructive"
-      });
-    } else {
-      loadCartItems();
-      toast({
-        title: "Ingresso adicionado ao carrinho!",
-        description: "Vá para o carrinho para finalizar a compra."
-      });
+      if (error) {
+        console.error('Error adding to cart:', error);
+        toast({
+          title: "Erro ao adicionar ao carrinho",
+          description: "Tente novamente.",
+          variant: "destructive"
+        });
+      } else {
+        loadCartItems();
+        toast({
+          title: "Ingresso adicionado ao carrinho!",
+          description: "Vá para o carrinho para finalizar a compra."
+        });
+      }
+    } catch (error) {
+      console.error('Error in addToCart:', error);
     }
   };
 
@@ -164,7 +193,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const totalAmount = cartItems.reduce((sum, item) => sum + (item.events?.price || 0) * item.quantity, 0);
+  const totalAmount = cartItems.reduce((sum, item) => {
+    const price = item.events?.price || 0;
+    return sum + (price * item.quantity);
+  }, 0);
 
   return (
     <CartContext.Provider value={{
