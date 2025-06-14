@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +43,7 @@ const Index = () => {
 
   const handleEventClick = (event: Tables<'events'>) => {
     setSelectedEvent({
-      id: parseInt(event.id),
+      id: event.id,
       title: event.title,
       description: event.description || '',
       date: event.date,
@@ -154,7 +153,7 @@ const Index = () => {
           {filteredEvents.map(event => (
             <div key={event.id} onClick={() => handleEventClick(event)} className="cursor-pointer">
               <EventCard event={{
-                id: parseInt(event.id),
+                id: event.id,
                 title: event.title,
                 description: event.description || '',
                 date: event.date,
