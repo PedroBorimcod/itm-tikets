@@ -4,13 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, ArrowLeft, Ticket } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useCart } from '@/hooks/useCart';
 import { useToast } from '@/hooks/use-toast';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { clearCart } = useCart();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
 
@@ -19,9 +17,6 @@ const PaymentSuccess = () => {
   useEffect(() => {
     const handleSuccessfulPayment = async () => {
       if (sessionId) {
-        // Limpar o carrinho após pagamento bem-sucedido
-        await clearCart();
-        
         toast({
           title: "Pagamento realizado com sucesso!",
           description: "Seus ingressos foram processados. Você receberá um email de confirmação.",
@@ -31,7 +26,7 @@ const PaymentSuccess = () => {
     };
 
     handleSuccessfulPayment();
-  }, [sessionId, clearCart, toast]);
+  }, [sessionId, toast]);
 
   if (loading) {
     return (

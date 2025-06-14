@@ -6,7 +6,6 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Link, useNavigate } from 'react-router-dom';
 import { Ticket, User, LogIn, Building2 } from 'lucide-react';
 import UserDropdown from './UserDropdown';
-import CartIcon from './CartIcon';
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -39,10 +38,7 @@ const Navbar = () => {
             )}
 
             {user ? (
-              <div className="flex items-center space-x-2">
-                <CartIcon />
-                <UserDropdown />
-              </div>
+              <UserDropdown />
             ) : (
               <Button onClick={() => navigate('/auth')}>
                 <LogIn className="h-4 w-4 mr-2" />
