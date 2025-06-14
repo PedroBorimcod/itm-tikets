@@ -151,20 +151,23 @@ const Index = () => {
         {/* Grid de Eventos */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEvents.map(event => (
-            <div key={event.id} onClick={() => handleEventClick(event)} className="cursor-pointer">
-              <EventCard event={{
-                id: event.id,
-                title: event.title,
-                description: event.description || '',
-                date: event.date,
-                time: event.time,
-                location: event.location,
-                price: Number(event.price),
-                image: event.image || "/placeholder.svg",
-                category: event.category,
-                capacity: event.capacity,
-                sold_tickets: event.sold_tickets || 0
-              }} />
+            <div key={event.id} className="cursor-pointer">
+              <EventCard
+                event={{
+                  id: event.id,
+                  title: event.title,
+                  description: event.description || '',
+                  date: event.date,
+                  time: event.time,
+                  location: event.location,
+                  price: Number(event.price),
+                  image: event.image || "/placeholder.svg",
+                  category: event.category,
+                  capacity: event.capacity,
+                  sold_tickets: event.sold_tickets || 0
+                }}
+                onViewDetails={handleEventClick}
+              />
             </div>
           ))}
         </div>
