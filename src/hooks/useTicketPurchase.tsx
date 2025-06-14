@@ -8,6 +8,7 @@ import { Tables } from '@/integrations/supabase/types';
 type TicketType = Tables<'ticket_types'>;
 
 interface PurchaseTicketData {
+  eventId: string;
   ticketTypeId: string;
   quantity: number;
   price: number;
@@ -24,22 +25,27 @@ export function useTicketPurchase() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { 
-          ticketTypeId: purchaseData.ticketTypeId,
-          quantity: purchaseData.quantity,
+      // Ajustar para o formato esperado pelo edge function: { cartItems: [...] }
+      const cartItems = [
+        {
+          event_id: purchaseData.eventId,
+          title: purchaseData.eventTitle,
           price: purchaseData.price,
-          eventTitle: purchaseData.eventTitle
-        }
+          quantity: purchaseData.quantity,
+        },
+      ];
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { cartItems },
       });
 
       if (error) throw error;
 
-      if (data.url) {
-        window.open(data.url, '_blank');
+      if (data?.url) {
+        // Redireciona na mesma aba (ou troque para window.open se quiser nova aba)
+        window.location.href = data.url;
         toast({
           title: "Redirecionando para pagamento",
-          description: "Você será redirecionado para o Stripe em uma nova aba."
+          description: "Você será levado ao Stripe.",
         });
       }
     } catch (error) {
@@ -56,3 +62,4 @@ export function useTicketPurchase() {
 
   return { purchaseTickets, loading };
 }
+

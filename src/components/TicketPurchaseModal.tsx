@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -104,15 +103,16 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
       return;
     }
 
-    if (!selectedTicketType) return;
+    if (!selectedTicketType || !event) return;
 
     await purchaseTickets({
+      eventId: event.id,
       ticketTypeId: selectedTicketType.id,
       quantity,
       price: selectedTicketType.price,
       eventTitle: event.title
     });
-    
+
     onClose();
   };
 
