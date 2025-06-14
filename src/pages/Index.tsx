@@ -53,7 +53,7 @@ const Index = () => {
       image: event.image || "/placeholder.svg",
       category: event.category,
       capacity: event.capacity,
-      soldTickets: event.sold_tickets || 0
+      sold_tickets: event.sold_tickets || 0
     });
     setIsModalOpen(true);
   };
@@ -163,7 +163,7 @@ const Index = () => {
                 image: event.image || "/placeholder.svg",
                 category: event.category,
                 capacity: event.capacity,
-                soldTickets: event.sold_tickets || 0
+                sold_tickets: event.sold_tickets || 0
               }} />
             </div>
           ))}
