@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -5,7 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Trash2, Users, ArrowLeft } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, Trash2, Users, ArrowLeft, Plus, Minus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +16,14 @@ import { Tables } from '@/integrations/supabase/types';
 
 type Event = Tables<'events'>;
 type Producer = Tables<'producers'>;
+type TicketType = Tables<'ticket_types'>;
+
+interface TicketTypeFormData {
+  name: string;
+  price: string;
+  capacity: string;
+  enabled: boolean;
+}
 
 const AdminEvents = () => {
   const { user } = useAuth();
@@ -33,6 +43,14 @@ const AdminEvents = () => {
     image: '',
     producer_id: ''
   });
+  
+  const [ticketTypes, setTicketTypes] = useState<TicketTypeFormData[]>([
+    { name: 'front_stage', price: '', capacity: '', enabled: false },
+    { name: 'pista', price: '', capacity: '', enabled: false },
+    { name: 'mesanino', price: '', capacity: '', enabled: false },
+    { name: 'back_stage', price: '', capacity: '', enabled: false }
+  ]);
+  
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -70,37 +88,84 @@ const AdminEvents = () => {
     }
   };
 
+  const getTicketTypeDisplayName = (name: string) => {
+    const names: { [key: string]: string } = {
+      'front_stage': 'Front Stage',
+      'pista': 'Pista',
+      'mesanino': 'Mesanino',
+      'back_stage': 'Back Stage'
+    };
+    return names[name] || name;
+  };
+
+  const updateTicketType = (index: number, field: keyof TicketTypeFormData, value: string | boolean) => {
+    const updated = [...ticketTypes];
+    updated[index] = { ...updated[index], [field]: value };
+    setTicketTypes(updated);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
-    setLoading(true);
-    
-    const { error } = await supabase.from('events').insert({
-      title: formData.title,
-      description: formData.description,
-      date: formData.date,
-      time: formData.time,
-      location: formData.location,
-      price: parseFloat(formData.price),
-      capacity: parseInt(formData.capacity),
-      category: formData.category,
-      image: formData.image,
-      producer_id: formData.producer_id || null,
-      created_by: user.id
-    });
-
-    if (error) {
+    const enabledTicketTypes = ticketTypes.filter(tt => tt.enabled);
+    if (enabledTicketTypes.length === 0) {
       toast({
-        title: "Erro ao criar evento",
-        description: error.message,
+        title: "Erro",
+        description: "Selecione pelo menos um tipo de ingresso.",
         variant: "destructive"
       });
-    } else {
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      // Criar o evento
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .insert({
+          title: formData.title,
+          description: formData.description,
+          date: formData.date,
+          time: formData.time,
+          location: formData.location,
+          price: Math.min(...enabledTicketTypes.map(tt => parseFloat(tt.price))), // Menor preço
+          capacity: enabledTicketTypes.reduce((sum, tt) => sum + parseInt(tt.capacity), 0), // Soma das capacidades
+          category: formData.category,
+          image: formData.image,
+          producer_id: formData.producer_id || null,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (eventError) {
+        throw eventError;
+      }
+
+      // Criar os tipos de ingressos
+      const ticketTypesToInsert = enabledTicketTypes.map(tt => ({
+        event_id: eventData.id,
+        name: tt.name,
+        price: parseFloat(tt.price),
+        capacity: parseInt(tt.capacity)
+      }));
+
+      const { error: ticketTypesError } = await supabase
+        .from('ticket_types')
+        .insert(ticketTypesToInsert);
+
+      if (ticketTypesError) {
+        throw ticketTypesError;
+      }
+
       toast({
         title: "Evento criado",
-        description: "Evento criado com sucesso."
+        description: "Evento e tipos de ingressos criados com sucesso."
       });
+      
+      // Reset form
       setFormData({
         title: '',
         description: '',
@@ -113,10 +178,24 @@ const AdminEvents = () => {
         image: '',
         producer_id: ''
       });
+      
+      setTicketTypes([
+        { name: 'front_stage', price: '', capacity: '', enabled: false },
+        { name: 'pista', price: '', capacity: '', enabled: false },
+        { name: 'mesanino', price: '', capacity: '', enabled: false },
+        { name: 'back_stage', price: '', capacity: '', enabled: false }
+      ]);
+      
       loadEvents();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao criar evento",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -167,7 +246,7 @@ const AdminEvents = () => {
               <CardTitle>Criar Novo Evento</CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="title">Título</Label>
                   <Input
@@ -221,31 +300,6 @@ const AdminEvents = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="price">Preço</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={(e) => setFormData({...formData, price: e.target.value})}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="capacity">Capacidade</Label>
-                    <Input
-                      id="capacity"
-                      type="number"
-                      value={formData.capacity}
-                      onChange={(e) => setFormData({...formData, capacity: e.target.value})}
-                      required
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="category">Categoria</Label>
                   <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
@@ -287,6 +341,60 @@ const AdminEvents = () => {
                     onChange={(e) => setFormData({...formData, image: e.target.value})}
                   />
                 </div>
+
+                {/* Tipos de Ingressos */}
+                <div className="space-y-4">
+                  <Label className="text-lg font-semibold">Tipos de Ingressos</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Selecione quais tipos de ingressos estarão disponíveis para este evento:
+                  </p>
+                  
+                  {ticketTypes.map((ticketType, index) => (
+                    <div key={ticketType.name} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`ticket-${ticketType.name}`}
+                          checked={ticketType.enabled}
+                          onCheckedChange={(checked) => 
+                            updateTicketType(index, 'enabled', checked as boolean)
+                          }
+                        />
+                        <Label 
+                          htmlFor={`ticket-${ticketType.name}`}
+                          className="font-medium"
+                        >
+                          {getTicketTypeDisplayName(ticketType.name)}
+                        </Label>
+                      </div>
+                      
+                      {ticketType.enabled && (
+                        <div className="grid grid-cols-2 gap-3 ml-6">
+                          <div className="space-y-1">
+                            <Label className="text-sm">Preço (R$)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              value={ticketType.price}
+                              onChange={(e) => updateTicketType(index, 'price', e.target.value)}
+                              required={ticketType.enabled}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-sm">Capacidade</Label>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              value={ticketType.capacity}
+                              onChange={(e) => updateTicketType(index, 'capacity', e.target.value)}
+                              required={ticketType.enabled}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
                 
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Criando...' : 'Criar Evento'}
@@ -310,7 +418,7 @@ const AdminEvents = () => {
                         <h3 className="font-semibold">{event.title}</h3>
                         <p className="text-sm text-muted-foreground">{event.date} - {event.location}</p>
                         <p className="text-sm font-medium">
-                          R$ {event.price?.toFixed(2).replace('.', ',')} - {event.sold_tickets || 0}/{event.capacity} vendidos
+                          A partir de R$ {event.price?.toFixed(2).replace('.', ',')} - {event.sold_tickets || 0}/{event.capacity} vendidos
                         </p>
                       </div>
                       <Button

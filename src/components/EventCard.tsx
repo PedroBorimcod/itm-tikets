@@ -2,14 +2,10 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, MapPin, Users, ShoppingCart } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/hooks/useCart';
-import { useNavigate } from 'react-router-dom';
+import { CalendarDays, MapPin, Users, Eye } from 'lucide-react';
 
 interface Event {
-  id: number;
+  id: string;
   title: string;
   description: string;
   date: string;
@@ -19,19 +15,15 @@ interface Event {
   image: string;
   category: string;
   capacity: number;
-  soldTickets: number;
+  sold_tickets: number;
 }
 
 interface EventCardProps {
   event: Event;
+  onViewDetails: (event: Event) => void;
 }
 
-const EventCard = ({ event }: EventCardProps) => {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const { addToCart } = useCart();
-  const navigate = useNavigate();
-  
+const EventCard = ({ event, onViewDetails }: EventCardProps) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR', {
@@ -41,48 +33,15 @@ const EventCard = ({ event }: EventCardProps) => {
     });
   };
 
-  const availableTickets = event.capacity - event.soldTickets;
+  const availableTickets = event.capacity - (event.sold_tickets || 0);
   const isLowStock = availableTickets <= 50;
   const isSoldOut = availableTickets <= 0;
 
-  const handleBuyTicket = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Evita que abra o modal quando clicar no botão
-    
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
-    try {
-      await addToCart(event.id.toString(), 1);
-      toast({
-        title: "Ingresso adicionado!",
-        description: "Vá para o carrinho para finalizar a compra.",
-        action: (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => navigate('/cart')}
-          >
-            Ver Carrinho
-          </Button>
-        )
-      });
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast({
-        title: "Erro ao adicionar ao carrinho",
-        description: "Tente novamente.",
-        variant: "destructive"
-      });
-    }
-  };
-
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 border-border hover:border-primary cursor-pointer">
-      <div className="relative">
+      <div className="relative" onClick={() => onViewDetails(event)}>
         <img 
-          src={event.image} 
+          src={event.image || "/placeholder.svg"} 
           alt={event.title}
           className="w-full h-48 object-cover"
         />
@@ -109,7 +68,7 @@ const EventCard = ({ event }: EventCardProps) => {
         )}
       </div>
       
-      <CardHeader>
+      <CardHeader onClick={() => onViewDetails(event)}>
         <CardTitle className="font-black text-foreground line-clamp-2">
           {event.title}
         </CardTitle>
@@ -118,7 +77,7 @@ const EventCard = ({ event }: EventCardProps) => {
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4" onClick={() => onViewDetails(event)}>
         <div className="flex items-center text-sm text-muted-foreground">
           <CalendarDays className="h-4 w-4 mr-2 text-primary" />
           <span className="font-bold">{formatDate(event.date)} às {event.time}</span>
@@ -137,18 +96,20 @@ const EventCard = ({ event }: EventCardProps) => {
         </div>
         
         <div className="text-2xl font-black text-primary">
-          R$ {event.price.toFixed(2).replace('.', ',')}
+          A partir de R$ {event.price.toFixed(2).replace('.', ',')}
         </div>
       </CardContent>
       
       <CardFooter>
         <Button 
           className="w-full bg-primary hover:bg-primary/90 text-white font-bold"
-          disabled={isSoldOut}
-          onClick={handleBuyTicket}
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewDetails(event);
+          }}
         >
-          <ShoppingCart className="h-4 w-4 mr-2" />
-          {isSoldOut ? 'Esgotado' : 'Adicionar ao Carrinho'}
+          <Eye className="h-4 w-4 mr-2" />
+          Ver Detalhes e Comprar
         </Button>
       </CardFooter>
     </Card>

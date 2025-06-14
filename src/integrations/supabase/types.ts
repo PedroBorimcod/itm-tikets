@@ -9,30 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      cart_items: {
-        Row: {
-          event_id: number
-          id: number
-          inserted_at: string | null
-          quantity: number
-          user_id: string | null
-        }
-        Insert: {
-          event_id: number
-          id?: number
-          inserted_at?: string | null
-          quantity?: number
-          user_id?: string | null
-        }
-        Update: {
-          event_id?: number
-          id?: number
-          inserted_at?: string | null
-          quantity?: number
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       events: {
         Row: {
           capacity: number
@@ -105,6 +81,7 @@ export type Database = {
           qr_code: string | null
           quantity: number
           sale_amount: number | null
+          ticket_type_id: string | null
         }
         Insert: {
           created_at?: string
@@ -115,6 +92,7 @@ export type Database = {
           qr_code?: string | null
           quantity: number
           sale_amount?: number | null
+          ticket_type_id?: string | null
         }
         Update: {
           created_at?: string
@@ -125,6 +103,7 @@ export type Database = {
           qr_code?: string | null
           quantity?: number
           sale_amount?: number | null
+          ticket_type_id?: string | null
         }
         Relationships: [
           {
@@ -139,6 +118,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_ticket_type_id_fkey"
+            columns: ["ticket_type_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_types"
             referencedColumns: ["id"]
           },
         ]
@@ -229,6 +215,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      ticket_types: {
+        Row: {
+          capacity: number
+          created_at: string
+          event_id: string
+          id: string
+          name: string
+          price: number
+          sold_tickets: number
+        }
+        Insert: {
+          capacity: number
+          created_at?: string
+          event_id: string
+          id?: string
+          name: string
+          price: number
+          sold_tickets?: number
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          name?: string
+          price?: number
+          sold_tickets?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_types_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
