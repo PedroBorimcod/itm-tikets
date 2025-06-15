@@ -78,7 +78,7 @@ export type Database = {
           id: string
           order_id: string | null
           price: number
-          qr_code: string | null
+          qr_code: string[] | null
           quantity: number
           sale_amount: number | null
           ticket_type_id: string | null
@@ -89,7 +89,7 @@ export type Database = {
           id?: string
           order_id?: string | null
           price: number
-          qr_code?: string | null
+          qr_code?: string[] | null
           quantity: number
           sale_amount?: number | null
           ticket_type_id?: string | null
@@ -100,7 +100,7 @@ export type Database = {
           id?: string
           order_id?: string | null
           price?: number
-          qr_code?: string | null
+          qr_code?: string[] | null
           quantity?: number
           sale_amount?: number | null
           ticket_type_id?: string | null

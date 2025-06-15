@@ -24,6 +24,7 @@ import { toast } from '@/hooks/use-toast';
 type OrderItem = Tables<'order_items'> & {
   events: Tables<'events'>;
   orders: Tables<'orders'>;
+  qr_code: string[] | null;
 };
 
 const MyTickets = () => {
@@ -167,9 +168,12 @@ const MyTickets = () => {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center text-sm">
                       <QrCode className="h-4 w-4 mr-2" />
-                      <span className="font-mono text-xs">{ticket.qr_code}</span>
+                      <span className="font-mono text-xs">
+                        {Array.isArray(ticket.qr_code) 
+                          ? (ticket.qr_code[0] || "—")
+                          : (ticket.qr_code || "—")}
+                      </span>
                     </div>
-                    {/* Botão de excluir */}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -205,7 +209,7 @@ const MyTickets = () => {
           open={modalOpen}
           onOpenChange={handleCloseModal}
           quantity={selectedTicket.quantity}
-          qrCode={selectedTicket.qr_code}
+          qrCodes={Array.isArray(selectedTicket.qr_code) ? selectedTicket.qr_code : []}
           eventTitle={selectedTicket.events?.title || "Evento"}
         />
       )}
@@ -240,3 +244,4 @@ const MyTickets = () => {
 };
 
 export default MyTickets;
+
