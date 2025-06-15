@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -48,98 +49,129 @@ export default function WithdrawModal(props: WithdrawModalProps) {
 
   return (
     <Dialog open={props.open} onOpenChange={v => { if (!v) props.onClose(); }}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Dados para Depósito</DialogTitle>
-        </DialogHeader>
-        {/* ALERTA DE HORÁRIO DE SAQUE */}
-        <Alert variant="destructive" className="mb-4">
-          <AlertTitle>Aviso</AlertTitle>
-          <AlertDescription>
-            Os saques só podem ser solicitados das 8h às 22h.
-          </AlertDescription>
-        </Alert>
-        <div className="space-y-4">
-          <Label>Forma de Depósito</Label>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={method === "pix"}
-                onChange={() => setMethod("pix")}
-                name="deposit-method"
-              />
-              Pix
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={method === "bank"}
-                onChange={() => setMethod("bank")}
-                name="deposit-method"
-              />
-              Depósito Bancário
-            </label>
-          </div>
-          {method === "pix" && (
+      <DialogContent className="bg-white dark:bg-background rounded-xl p-0 border-0 max-w-md shadow-2xl animate-fade-in">
+        <div className="p-6">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-bold mb-2">Dados para Depósito</DialogTitle>
+          </DialogHeader>
+          <Alert variant="destructive" className="mb-5 rounded-md border-2 border-destructive/20 bg-red-50 dark:bg-red-900/10">
+            <AlertTitle className="font-semibold">Aviso</AlertTitle>
+            <AlertDescription>
+              Os saques só podem ser solicitados das <span className="font-medium text-destructive">8h às 22h</span>.
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-6">
             <div>
-              <Label>Chave Pix</Label>
+              <Label className="mb-2 block text-base">Forma de Depósito</Label>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  className={`flex-1 px-4 py-2 rounded-lg border transition focus:outline-none
+                    ${method === "pix"
+                      ? "bg-primary text-white border-primary shadow"
+                      : "bg-muted text-foreground border-muted-foreground/30 hover:bg-accent"}
+                  `}
+                  onClick={() => setMethod("pix")}
+                >
+                  Pix
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 px-4 py-2 rounded-lg border transition focus:outline-none
+                    ${method === "bank"
+                      ? "bg-primary text-white border-primary shadow"
+                      : "bg-muted text-foreground border-muted-foreground/30 hover:bg-accent"}
+                  `}
+                  onClick={() => setMethod("bank")}
+                >
+                  Depósito Bancário
+                </button>
+              </div>
+            </div>
+
+            {method === "pix" && (
+              <div>
+                <Label className="mb-1 block">Chave Pix</Label>
+                <Input
+                  value={pixKey}
+                  onChange={e => setPixKey(e.target.value)}
+                  placeholder="Informe sua chave Pix"
+                  className="focus:ring-primary focus:border-primary"
+                />
+              </div>
+            )}
+
+            {method === "bank" && (
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div className="col-span-2">
+                  <Label className="mb-1 block">Banco</Label>
+                  <Input
+                    value={bankName}
+                    onChange={e => setBankName(e.target.value)}
+                    placeholder="Nome do banco"
+                    className="focus:ring-primary focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block">Agência</Label>
+                  <Input
+                    value={bankAgency}
+                    onChange={e => setBankAgency(e.target.value)}
+                    placeholder="Número da agência"
+                    className="focus:ring-primary focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1 block">Conta</Label>
+                  <Input
+                    value={bankAccount}
+                    onChange={e => setBankAccount(e.target.value)}
+                    placeholder="Número da conta"
+                    className="focus:ring-primary focus:border-primary"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label className="mb-1 block">Titular</Label>
+                  <Input
+                    value={bankHolder}
+                    onChange={e => setBankHolder(e.target.value)}
+                    placeholder="Nome completo do titular"
+                    className="focus:ring-primary focus:border-primary"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div>
+              <Label className="mb-1 block">Valor do Saque</Label>
               <Input
-                value={pixKey}
-                onChange={e => setPixKey(e.target.value)}
-                placeholder="Informe sua chave Pix"
+                type="number"
+                placeholder="Valor do saque"
+                value={withdrawAmount}
+                onChange={e => setWithdrawAmount(e.target.value)}
+                className="focus:ring-primary focus:border-primary"
+                min={1}
               />
             </div>
-          )}
-          {method === "bank" && (
-            <div className="space-y-2">
-              <div>
-                <Label>Banco</Label>
-                <Input
-                  value={bankName}
-                  onChange={e => setBankName(e.target.value)}
-                  placeholder="Nome do banco"
-                />
-              </div>
-              <div>
-                <Label>Agência</Label>
-                <Input
-                  value={bankAgency}
-                  onChange={e => setBankAgency(e.target.value)}
-                  placeholder="Número da agência"
-                />
-              </div>
-              <div>
-                <Label>Conta</Label>
-                <Input
-                  value={bankAccount}
-                  onChange={e => setBankAccount(e.target.value)}
-                  placeholder="Número da conta"
-                />
-              </div>
-              <div>
-                <Label>Titular</Label>
-                <Input
-                  value={bankHolder}
-                  onChange={e => setBankHolder(e.target.value)}
-                  placeholder="Nome completo do titular"
-                />
-              </div>
-            </div>
-          )}
-          <Label>Valor do Saque</Label>
-          <Input
-            type="number"
-            placeholder="Valor do saque"
-            value={withdrawAmount}
-            onChange={e => setWithdrawAmount(e.target.value)}
-          />
+          </div>
+
+          <DialogFooter className="mt-8">
+            <Button
+              onClick={handleConfirm}
+              disabled={
+                loading ||
+                !withdrawAmount ||
+                (method === "pix"
+                  ? !pixKey
+                  : (!bankName || !bankAgency || !bankAccount || !bankHolder))
+              }
+              className="w-full py-3 text-base font-semibold shadow-md hover:scale-[1.02] transition-transform"
+            >
+              {loading ? "Processando..." : "Confirmar Saque"}
+            </Button>
+          </DialogFooter>
         </div>
-        <DialogFooter className="mt-4">
-          <Button onClick={handleConfirm} disabled={loading || !withdrawAmount || (method === "pix" ? !pixKey : (!bankName || !bankAgency || !bankAccount || !bankHolder))} className="w-full">
-            {loading ? "Processando..." : "Confirmar Saque"}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
