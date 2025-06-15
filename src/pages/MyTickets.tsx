@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -138,7 +137,7 @@ const MyTickets = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tickets.map((ticket) => (
               <Card key={ticket.id} className="overflow-hidden">
                 <div className="relative">
@@ -244,4 +243,3 @@ const MyTickets = () => {
 };
 
 export default MyTickets;
-
