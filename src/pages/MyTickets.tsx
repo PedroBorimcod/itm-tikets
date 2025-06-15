@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { useNavigate } from 'react-router-dom';
+import TicketQRCodesModal from '@/components/TicketQRCodesModal';
 
 type OrderItem = Tables<'order_items'> & {
   events: Tables<'events'>;
@@ -19,6 +20,10 @@ const MyTickets = () => {
   const navigate = useNavigate();
   const [tickets, setTickets] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // State for modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState<OrderItem | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -44,6 +49,16 @@ const MyTickets = () => {
       setTickets(data || []);
     }
     setLoading(false);
+  };
+
+  const handleShowQRCodes = (ticket: OrderItem) => {
+    setSelectedTicket(ticket);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedTicket(null);
   };
 
   if (loading) {
@@ -107,12 +122,31 @@ const MyTickets = () => {
                   <div className="text-lg font-bold text-primary">
                     R$ {ticket.price?.toFixed(2).replace('.', ',')}
                   </div>
+
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleShowQRCodes(ticket)}
+                    className="w-full mt-2"
+                  >
+                    <QrCode className="mr-2 h-4 w-4" />
+                    Ver QR Codes
+                  </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
       </div>
+      {/* Modal for QR codes */}
+      {selectedTicket && (
+        <TicketQRCodesModal
+          open={modalOpen}
+          onOpenChange={handleCloseModal}
+          quantity={selectedTicket.quantity}
+          qrCode={selectedTicket.qr_code}
+          eventTitle={selectedTicket.events?.title || "Evento"}
+        />
+      )}
     </div>
   );
 };
