@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, Trash2, Users, ArrowLeft, Plus, Minus } from 'lucide-react';
+import { Calendar, Trash2, Users, ArrowLeft, Plus, Minus, Pencil } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -228,6 +228,106 @@ const AdminEvents = () => {
     }
   };
 
+  // Estados para edição de evento
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [editingTicketTypes, setEditingTicketTypes] = useState<TicketTypeFormData[]>([]);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingLoading, setEditingLoading] = useState(false);
+
+  // Carregar tipos de ingressos de um evento
+  const loadTicketTypesForEvent = async (eventId: string): Promise<TicketTypeFormData[]> => {
+    const { data, error } = await supabase
+      .from('ticket_types')
+      .select('*')
+      .eq('event_id', eventId);
+
+    if (error) {
+      toast({
+        title: "Erro ao buscar lotes",
+        description: error.message,
+        variant: "destructive"
+      });
+      return [];
+    }
+
+    return (data || []).map(tt => ({
+      name: tt.name,
+      price: tt.price?.toString() || '',
+      capacity: tt.capacity?.toString() || '',
+      enabled: true
+    }));
+  };
+
+  // Abrir modal e carregar dados atuais
+  const handleEditClick = async (event: Event) => {
+    const ticketTypes = await loadTicketTypesForEvent(event.id);
+    setEditingEvent(event);
+    setEditingTicketTypes(ticketTypes);
+    setShowEditModal(true);
+  };
+
+  // Atualiza lote editado
+  const updateEditingTicketType = (index: number, field: keyof TicketTypeFormData, value: string) => {
+    const updated = [...editingTicketTypes];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditingTicketTypes(updated);
+  };
+
+  // Salvar alterações do evento/lotes
+  const handleEditSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEvent || editingTicketTypes.length === 0) return;
+
+    setEditingLoading(true);
+
+    try {
+      // Atualiza evento
+      const updatedPrice = Math.min(...editingTicketTypes.map(tt => parseFloat(tt.price)));
+      const updatedCapacity = editingTicketTypes.reduce((sum, tt) => sum + parseInt(tt.capacity), 0);
+
+      const { error: eventError } = await supabase
+        .from('events')
+        .update({
+          ...editingEvent,
+          price: updatedPrice,
+          capacity: updatedCapacity
+        })
+        .eq('id', editingEvent.id);
+
+      if (eventError) throw eventError;
+
+      // Atualiza tipos de ingresso
+      for (const tt of editingTicketTypes) {
+        const { error: ttError } = await supabase
+          .from('ticket_types')
+          .update({
+            price: parseFloat(tt.price),
+            capacity: parseInt(tt.capacity)
+          })
+          .eq('event_id', editingEvent.id)
+          .eq('name', tt.name);
+        if (ttError) throw ttError;
+      }
+
+      toast({
+        title: "Evento atualizado",
+        description: "Os lotes/tipos de ingresso foram alterados com sucesso."
+      });
+      setShowEditModal(false);
+      setEditingEvent(null);
+      setEditingTicketTypes([]);
+      loadEvents();
+    } catch (error: any) {
+      toast({
+        title: "Erro na atualização",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setEditingLoading(false);
+    }
+  };
+
   // Modal de novo admin
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
@@ -364,6 +464,61 @@ const AdminEvents = () => {
                 </Button>
                 <Button type="submit" disabled={adminLoading}>
                   {adminLoading ? "Cadastrando..." : "Cadastrar admin"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de edição de evento/lotes */}
+        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Evento e Lotes</DialogTitle>
+              <DialogDescription>
+                Altere as informações dos lotes (tipos de ingresso) deste evento.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleEditSave} className="space-y-5 my-2">
+              <div>
+                <Label>Título do evento</Label>
+                <Input value={editingEvent?.title || ''} readOnly />
+              </div>
+              {/* Lotes editáveis */}
+              <div className="space-y-3">
+                {editingTicketTypes.map((tt, idx) => (
+                  <div key={tt.name} className="border rounded-lg p-4 space-y-3">
+                    <Label className="font-medium">{getTicketTypeDisplayName(tt.name)}</Label>
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div>
+                        <Label className="text-sm">Preço (R$)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={tt.price}
+                          onChange={e => updateEditingTicketType(idx, "price", e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Capacidade</Label>
+                        <Input
+                          type="number"
+                          value={tt.capacity}
+                          onChange={e => updateEditingTicketType(idx, "capacity", e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={editingLoading}>
+                  {editingLoading ? "Salvando..." : "Salvar alterações"}
                 </Button>
               </DialogFooter>
             </form>
@@ -576,14 +731,23 @@ const AdminEvents = () => {
                           A partir de R$ {event.price?.toFixed(2).replace('.', ',')} - {event.sold_tickets || 0}/{event.capacity} vendidos
                         </p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(event.id)}
-                        className="mt-2 md:mt-0 self-end md:self-auto"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-2 mt-2 md:mt-0 self-end md:self-auto">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleEditClick(event)}
+                          aria-label="Editar evento"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(event.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))
                 )}
