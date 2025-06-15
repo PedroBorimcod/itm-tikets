@@ -126,6 +126,11 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
     return names[name] || name;
   };
 
+  // === NEW PRICE CALCULATIONS ===
+  const subtotal = selectedTicketType ? selectedTicketType.price * quantity : 0;
+  const serviceFee = subtotal * 0.08;
+  const total = subtotal + serviceFee;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
@@ -273,11 +278,36 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
                       <Plus className="h-3 w-3" />
                     </Button>
                   </div>
+                  {/* OLD total display removed from here */}
                   <div className="ml-auto text-right">
-                    <div className="text-sm text-muted-foreground">Total:</div>
+                    <div className="text-sm text-muted-foreground">Subtotal:</div>
                     <div className="text-xl font-bold text-primary">
-                      R$ {(selectedTicketType.price * quantity).toFixed(2).replace('.', ',')}
+                      R$ {subtotal.toFixed(2).replace('.', ',')}
                     </div>
+                  </div>
+                </div>
+
+                {/* NEW: Fee and total breakdown */}
+                <div className="bg-muted rounded-lg p-4 flex flex-col gap-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="font-semibold">
+                      R$ {subtotal.toFixed(2).replace('.', ',')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Taxa de serviço (8%)
+                    </span>
+                    <span className="font-semibold">
+                      R$ {serviceFee.toFixed(2).replace('.', ',')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between border-t border-border pt-2 mt-1">
+                    <span className="font-bold text-foreground">Total</span>
+                    <span className="font-bold text-primary text-lg">
+                      R$ {total.toFixed(2).replace('.', ',')}
+                    </span>
                   </div>
                 </div>
 
