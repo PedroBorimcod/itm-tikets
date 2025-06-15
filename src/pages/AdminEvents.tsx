@@ -12,25 +12,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { DataTableRowActions } from "@/components/data-table-row-actions";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
 import { AppAdminSidebar } from "@/components/AppAdminSidebar";
 import { AdminWithdrawRequests } from "@/components/AdminWithdrawRequests";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 interface Event {
   id: string;
@@ -288,190 +277,192 @@ const AdminEvents = () => {
   ];
 
   return (
-    <div className="flex min-h-screen">
-      <AppAdminSidebar
-        onCreateAdmin={openEventModal}
-        selectedSection={adminSidebarSection}
-        onSelectSection={setAdminSidebarSection}
-        totalWithdrawValue={totalWithdraw}
-      />
-      <main className="flex-1 p-4 md:p-8 bg-background">
-        {adminSidebarSection === "withdraws" ? (
-          <AdminWithdrawRequests />
-        ) : adminSidebarSection === "producers" ? (
-          <div>
-            <h2>Gerenciar Produtoras (Em breve)</h2>
-            <p>Funcionalidade de gerenciamento de produtoras estará disponível em breve.</p>
-          </div>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>Lista de Eventos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={columns} data={events} />
-            </CardContent>
-          </Card>
-        )}
-        <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" onClick={openEventModal}>
-              <Plus className="mr-2 h-4 w-4" />
-              Criar Novo Evento
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Criar Novo Evento</DialogTitle>
-              <DialogDescription>
-                Crie um novo evento para ser exibido na plataforma.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="title" className="text-right">
-                  Título
-                </Label>
-                <Input
-                  type="text"
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="date" className="text-right">
-                  Data
-                </Label>
-                <Input
-                  type="date"
-                  id="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="location" className="text-right">
-                  Localização
-                </Label>
-                <Input
-                  type="text"
-                  id="location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="price" className="text-right">
-                  Preço
-                </Label>
-                <Input
-                  type="number"
-                  id="price"
-                  value={price || ""}
-                  onChange={(e) => setPrice(Number(e.target.value))}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="capacity" className="text-right">
-                  Capacidade
-                </Label>
-                <Input
-                  type="number"
-                  id="capacity"
-                  value={capacity || ""}
-                  onChange={(e) => setCapacity(Number(e.target.value))}
-                  className="col-span-3"
-                />
-              </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppAdminSidebar
+          onCreateAdmin={openEventModal}
+          selectedSection={adminSidebarSection}
+          onSelectSection={setAdminSidebarSection}
+          totalWithdrawValue={totalWithdraw}
+        />
+        <main className="flex-1 p-4 md:p-8 bg-background">
+          {adminSidebarSection === "withdraws" ? (
+            <AdminWithdrawRequests />
+          ) : adminSidebarSection === "producers" ? (
+            <div>
+              <h2>Gerenciar Produtoras (Em breve)</h2>
+              <p>Funcionalidade de gerenciamento de produtoras estará disponível em breve.</p>
             </div>
-            <Button type="submit" onClick={createEvent}>
-              Criar Evento
-            </Button>
-          </DialogContent>
-        </Dialog>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Lista de Eventos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DataTable columns={columns} data={events} />
+              </CardContent>
+            </Card>
+          )}
+          <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" onClick={openEventModal}>
+                <Plus className="mr-2 h-4 w-4" />
+                Criar Novo Evento
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Criar Novo Evento</DialogTitle>
+                <DialogDescription>
+                  Crie um novo evento para ser exibido na plataforma.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="title" className="text-right">
+                    Título
+                  </Label>
+                  <Input
+                    type="text"
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="date" className="text-right">
+                    Data
+                  </Label>
+                  <Input
+                    type="date"
+                    id="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="location" className="text-right">
+                    Localização
+                  </Label>
+                  <Input
+                    type="text"
+                    id="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="price" className="text-right">
+                    Preço
+                  </Label>
+                  <Input
+                    type="number"
+                    id="price"
+                    value={price || ""}
+                    onChange={(e) => setPrice(Number(e.target.value))}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="capacity" className="text-right">
+                    Capacidade
+                  </Label>
+                  <Input
+                    type="number"
+                    id="capacity"
+                    value={capacity || ""}
+                    onChange={(e) => setCapacity(Number(e.target.value))}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <Button type="submit" onClick={createEvent}>
+                Criar Evento
+              </Button>
+            </DialogContent>
+          </Dialog>
 
-        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Editar Evento</DialogTitle>
-              <DialogDescription>
-                Edite os detalhes do evento selecionado.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="title" className="text-right">
-                  Título
-                </Label>
-                <Input
-                  type="text"
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="col-span-3"
-                />
+          <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Editar Evento</DialogTitle>
+                <DialogDescription>
+                  Edite os detalhes do evento selecionado.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="title" className="text-right">
+                    Título
+                  </Label>
+                  <Input
+                    type="text"
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="date" className="text-right">
+                    Data
+                  </Label>
+                  <Input
+                    type="date"
+                    id="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="location" className="text-right">
+                    Localização
+                  </Label>
+                  <Input
+                    type="text"
+                    id="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="price" className="text-right">
+                    Preço
+                  </Label>
+                  <Input
+                    type="number"
+                    id="price"
+                    value={price || ""}
+                    onChange={(e) => setPrice(Number(e.target.value))}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="capacity" className="text-right">
+                    Capacidade
+                  </Label>
+                  <Input
+                    type="number"
+                    id="capacity"
+                    value={capacity || ""}
+                    onChange={(e) => setCapacity(Number(e.target.value))}
+                    className="col-span-3"
+                  />
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="date" className="text-right">
-                  Data
-                </Label>
-                <Input
-                  type="date"
-                  id="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="location" className="text-right">
-                  Localização
-                </Label>
-                <Input
-                  type="text"
-                  id="location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="price" className="text-right">
-                  Preço
-                </Label>
-                <Input
-                  type="number"
-                  id="price"
-                  value={price || ""}
-                  onChange={(e) => setPrice(Number(e.target.value))}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="capacity" className="text-right">
-                  Capacidade
-                </Label>
-                <Input
-                  type="number"
-                  id="capacity"
-                  value={capacity || ""}
-                  onChange={(e) => setCapacity(Number(e.target.value))}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <Button type="submit" onClick={updateEvent}>
-              Atualizar Evento
-            </Button>
-          </DialogContent>
-        </Dialog>
-      </main>
-    </div>
+              <Button type="submit" onClick={updateEvent}>
+                Atualizar Evento
+              </Button>
+            </DialogContent>
+          </Dialog>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 };
 
