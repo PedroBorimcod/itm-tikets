@@ -198,20 +198,34 @@ const Index = () => {
       <section className="bg-foreground py-6 md:py-8">
         <div className="container mx-auto px-2 md:px-4">
           <div className="text-center mb-4 md:mb-6">
-            <h2 className="text-lg md:text-xl font-black text-background mb-1 md:mb-2">Por que escolher a ITM Tikets?</h2>
+            <h2 className="text-lg md:text-xl font-black text-background mb-1 md:mb-2">
+              Por que escolher a ITM Tikets?
+            </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 text-center">
-            <div>
-              <h3 className="text-lg md:text-2xl font-black text-primary mb-1">500+</h3>
-              <p className="text-background font-semibold text-xs md:text-sm">Eventos Realizados</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="flex flex-col items-center text-center">
+              <h3 className="text-lg md:text-2xl font-black text-primary mb-1">
+                500+
+              </h3>
+              <p className="text-background font-semibold text-xs md:text-sm">
+                Eventos Realizados
+              </p>
             </div>
-            <div>
-              <h3 className="text-lg md:text-2xl font-black text-primary mb-1">50K+</h3>
-              <p className="text-background font-semibold text-xs md:text-sm">Ingressos Vendidos</p>
+            <div className="flex flex-col items-center text-center">
+              <h3 className="text-lg md:text-2xl font-black text-primary mb-1">
+                50K+
+              </h3>
+              <p className="text-background font-semibold text-xs md:text-sm">
+                Ingressos Vendidos
+              </p>
             </div>
-            <div>
-              <h3 className="text-lg md:text-2xl font-black text-primary mb-1">1M+</h3>
-              <p className="text-background font-semibold text-xs md:text-sm">Usuários Satisfeitos</p>
+            <div className="flex flex-col items-center text-center">
+              <h3 className="text-lg md:text-2xl font-black text-primary mb-1">
+                1M+
+              </h3>
+              <p className="text-background font-semibold text-xs md:text-sm">
+                Usuários Satisfeitos
+              </p>
             </div>
           </div>
         </div>
