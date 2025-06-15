@@ -3,7 +3,6 @@ import React from "react";
 import { QrCode } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { QRCode } from "qrcode.react";
 
 interface TicketQRCodesModalProps {
   open: boolean;
@@ -20,7 +19,7 @@ const TicketQRCodesModal: React.FC<TicketQRCodesModalProps> = ({
   qrCodes,
   eventTitle,
 }) => {
-  // Mostra um código QR único por ingresso
+  // Sempre mostra um QR code de teste para cada ingresso exibido
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -39,21 +38,15 @@ const TicketQRCodesModal: React.FC<TicketQRCodesModalProps> = ({
           {Array.from({ length: quantity }).map((_, i) => (
             <div key={i} className="flex flex-col items-center">
               <Badge className="mb-2">Ingresso {i + 1}</Badge>
-              {qrCodes && qrCodes[i] ? (
-                <div className="bg-white p-2 rounded border flex flex-col items-center">
-                  <QRCode
-                    value={qrCodes[i]}
-                    size={150}
-                    level="M"
-                    includeMargin={true}
-                  />
-                  <div className="font-mono text-xs text-muted-foreground mt-2 break-all">
-                    {qrCodes[i]}
-                  </div>
+              <div className="bg-white p-2 rounded border flex flex-col items-center">
+                {/* Aqui poderia entrar um SVG de QR real, mas vamos mostrar um box de teste */}
+                <div className="w-[150px] h-[150px] bg-gray-100 flex items-center justify-center rounded text-gray-400 font-bold text-2xl mb-2 border-dashed border-2 border-gray-300">
+                  QR TESTE
                 </div>
-              ) : (
-                <div className="text-xs text-muted-foreground">QR code não disponível</div>
-              )}
+                <div className="font-mono text-xs text-muted-foreground mt-2 break-all">
+                  TESTE-123456
+                </div>
+              </div>
             </div>
           ))}
         </div>
