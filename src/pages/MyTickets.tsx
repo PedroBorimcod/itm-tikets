@@ -123,17 +123,22 @@ const MyTickets = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-2 sm:gap-4 mb-8">
           <Button
             variant="ghost"
             onClick={() => navigate('/')}
-            // Mobile: botão menor, menos padding, fonte menor; Desktop mantém padrão
-            className="h-8 px-2 py-1 text-xs gap-1 sm:h-10 sm:px-4 sm:py-2 sm:text-sm sm:gap-2"
+            // Botão ainda menor em mobile
+            className="h-7 px-1 py-1 text-[10px] gap-1 min-w-0 sm:h-10 sm:px-4 sm:py-2 sm:text-sm sm:gap-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+            <ArrowLeft className="h-3 w-3 mr-1 sm:h-4 sm:w-4 sm:mr-2" />
             Voltar à tela inicial
           </Button>
-          <h1 className="text-3xl font-black">Meus Ingressos</h1>
+          <h1
+            className="text-lg sm:text-3xl font-black whitespace-nowrap overflow-x-auto truncate"
+            style={{ maxWidth: "90vw" }}
+          >
+            Meus Ingressos
+          </h1>
         </div>
         {tickets.length === 0 ? (
           <Card>
