@@ -50,14 +50,15 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
         transition-all duration-300
         cursor-pointer
         /* Aumenta levemente a altura máxima só em mobile */
-        max-h-[370px] h-full min-h-[0] md:max-h-none
+        max-h-[370px] h-full min-h-[0] 
+        md:max-h-[460px]   <!-- altura desktop aumentada aqui -->
       `}
       onClick={() => onViewDetails(event)}
       style={{
-        height: '100vw', // mantém quadrado no mobile
-        maxHeight: 370, // AUMENTADO de 320 para 370
+        height: '100vw',         // mantém quadrado no mobile
+        maxHeight: 370,          // mobile: mesmo valor de antes
         minHeight: 0,
-        // Em md+ sobrescrito pelo Tailwind
+        // md+ sobrescrito pelo Tailwind via md:max-h-[460px]
       }}
     >
       {/* Imagem quadrada na parte superior */}
