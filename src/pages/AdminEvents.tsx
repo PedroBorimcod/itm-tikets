@@ -230,6 +230,7 @@ const AdminEvents = () => {
 
   // Estados para edição de evento
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [editingTitle, setEditingTitle] = useState<string>('');
   const [editingTicketTypes, setEditingTicketTypes] = useState<TicketTypeFormData[]>([]);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingLoading, setEditingLoading] = useState(false);
@@ -262,6 +263,7 @@ const AdminEvents = () => {
   const handleEditClick = async (event: Event) => {
     const ticketTypes = await loadTicketTypesForEvent(event.id);
     setEditingEvent(event);
+    setEditingTitle(event.title || '');
     setEditingTicketTypes(ticketTypes);
     setShowEditModal(true);
   };
@@ -281,14 +283,14 @@ const AdminEvents = () => {
     setEditingLoading(true);
 
     try {
-      // Atualiza evento
+      // Atualiza evento, título e valores
       const updatedPrice = Math.min(...editingTicketTypes.map(tt => parseFloat(tt.price)));
       const updatedCapacity = editingTicketTypes.reduce((sum, tt) => sum + parseInt(tt.capacity), 0);
 
       const { error: eventError } = await supabase
         .from('events')
         .update({
-          ...editingEvent,
+          title: editingTitle,
           price: updatedPrice,
           capacity: updatedCapacity
         })
@@ -311,10 +313,11 @@ const AdminEvents = () => {
 
       toast({
         title: "Evento atualizado",
-        description: "Os lotes/tipos de ingresso foram alterados com sucesso."
+        description: "O evento e os lotes/tipos de ingresso foram alterados com sucesso."
       });
       setShowEditModal(false);
       setEditingEvent(null);
+      setEditingTitle('');
       setEditingTicketTypes([]);
       loadEvents();
     } catch (error: any) {
@@ -476,13 +479,17 @@ const AdminEvents = () => {
             <DialogHeader>
               <DialogTitle>Editar Evento e Lotes</DialogTitle>
               <DialogDescription>
-                Altere as informações dos lotes (tipos de ingresso) deste evento.
+                Altere as informações do evento e dos lotes (tipos de ingresso) deste evento.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleEditSave} className="space-y-5 my-2">
               <div>
                 <Label>Título do evento</Label>
-                <Input value={editingEvent?.title || ''} readOnly />
+                <Input
+                  value={editingTitle}
+                  onChange={e => setEditingTitle(e.target.value)}
+                  required
+                />
               </div>
               {/* Lotes editáveis */}
               <div className="space-y-3">
