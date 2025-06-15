@@ -102,27 +102,29 @@ const Index = () => {
       <Hero />
       
       {/* Seção de Filtros */}
-      <section id="eventos" className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Ticket className="h-8 w-8 text-primary" />
-            <h2 className="text-3xl font-black text-foreground">ITM TIKETS</h2>
+      <section id="eventos" className="container mx-auto px-2 md:px-4 py-6 md:py-8">
+        <div className="text-center mb-6 md:mb-8">
+          <div className="flex items-center justify-center gap-2 mb-3 md:mb-4">
+            <Ticket className="h-7 w-7 md:h-8 md:w-8 text-primary" />
+            <h2 className="text-2xl md:text-3xl font-black text-foreground">ITM TIKETS</h2>
           </div>
-          <p className="text-muted-foreground font-medium">Descubra os melhores eventos e garante seu ingresso!</p>
+          <p className="text-muted-foreground font-medium text-sm md:text-base">
+            Descubra os melhores eventos e garante seu ingresso!
+          </p>
         </div>
         
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-4 mb-6 md:mb-8">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-2 md:top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar eventos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-2 border-border focus:border-primary font-medium"
+              className="pl-9 py-2 border-2 border-border focus:border-primary font-medium text-sm md:text-base"
             />
           </div>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full md:w-64 border-2 border-border focus:border-primary font-medium">
+            <SelectTrigger className="w-full md:w-64 border-2 border-border focus:border-primary font-medium text-sm md:text-base">
               <Filter className="h-4 w-4 mr-2 text-primary" />
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
@@ -135,7 +137,7 @@ const Index = () => {
             </SelectContent>
           </Select>
           <Select value={selectedDate} onValueChange={setSelectedDate}>
-            <SelectTrigger className="w-full md:w-64 border-2 border-border focus:border-primary font-medium">
+            <SelectTrigger className="w-full md:w-64 border-2 border-border focus:border-primary font-medium text-sm md:text-base">
               <CalendarDays className="h-4 w-4 mr-2 text-primary" />
               <SelectValue placeholder="Data" />
             </SelectTrigger>
@@ -150,7 +152,7 @@ const Index = () => {
         </div>
 
         {/* Grid de Eventos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filteredEvents.map(event => (
             <div key={event.id} className="cursor-pointer">
               <EventCard
@@ -174,11 +176,11 @@ const Index = () => {
         </div>
 
         {filteredEvents.length === 0 && (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-black text-foreground mb-2">
+          <div className="text-center py-10 md:py-12">
+            <h3 className="text-lg md:text-xl font-black text-foreground mb-1 md:mb-2">
               {t('events.noResults')}
             </h3>
-            <p className="text-muted-foreground font-medium">
+            <p className="text-muted-foreground font-medium text-sm md:text-base">
               Tente ajustar os filtros para encontrar eventos que interessam você.
             </p>
           </div>
@@ -193,33 +195,33 @@ const Index = () => {
       />
 
       {/* Seção de Estatísticas */}
-      <section className="bg-foreground py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-black text-background mb-4">Por que escolher a ITM Tikets?</h2>
+      <section className="bg-foreground py-10 md:py-16">
+        <div className="container mx-auto px-2 md:px-4">
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-black text-background mb-2 md:mb-4">Por que escolher a ITM Tikets?</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
-              <h3 className="text-3xl font-black text-primary mb-2">500+</h3>
-              <p className="text-background font-bold">Eventos Realizados</p>
+              <h3 className="text-2xl md:text-3xl font-black text-primary mb-1 md:mb-2">500+</h3>
+              <p className="text-background font-bold text-sm md:text-base">Eventos Realizados</p>
             </div>
             <div>
-              <h3 className="text-3xl font-black text-primary mb-2">50K+</h3>
-              <p className="text-background font-bold">Ingressos Vendidos</p>
+              <h3 className="text-2xl md:text-3xl font-black text-primary mb-1 md:mb-2">50K+</h3>
+              <p className="text-background font-bold text-sm md:text-base">Ingressos Vendidos</p>
             </div>
             <div>
-              <h3 className="text-3xl font-black text-primary mb-2">1M+</h3>
-              <p className="text-background font-bold">Usuários Satisfeitos</p>
+              <h3 className="text-2xl md:text-3xl font-black text-primary mb-1 md:mb-2">1M+</h3>
+              <p className="text-background font-bold text-sm md:text-base">Usuários Satisfeitos</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Seção de Contato */}
-      <section id="contato" className="container mx-auto px-4 py-16">
+      <section id="contato" className="container mx-auto px-2 md:px-4 py-10 md:py-16">
         <div className="text-center">
-          <h2 className="text-3xl font-black text-foreground mb-4">Entre em Contato</h2>
-          <p className="text-muted-foreground font-medium mb-8">Tem alguma dúvida? Estamos aqui para ajudar!</p>
+          <h2 className="text-2xl md:text-3xl font-black text-foreground mb-3 md:mb-4">Entre em Contato</h2>
+          <p className="text-muted-foreground font-medium mb-7 md:mb-8 text-sm md:text-base">Tem alguma dúvida? Estamos aqui para ajudar!</p>
           <Button size="lg" className="bg-primary hover:bg-primary/90 text-white font-bold">
             Fale Conosco
           </Button>

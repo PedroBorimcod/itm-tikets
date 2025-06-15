@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,7 +42,7 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
         <img 
           src={event.image || "/placeholder.svg"} 
           alt={event.title}
-          className="w-full h-48 object-cover"
+          className="w-full h-40 md:h-48 object-cover"
         />
         <Badge 
           className="absolute top-2 right-2 bg-primary text-white font-bold"
