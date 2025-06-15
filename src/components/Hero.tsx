@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Search, Calendar, MapPin, Sparkles } from 'lucide-react';
+import { Search, Sparkles } from 'lucide-react';
 
 const Hero = () => {
   return (
@@ -37,10 +37,6 @@ const Hero = () => {
               <Search className="h-5 w-5 mr-2" />
               Explorar Eventos
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-2 border-foreground text-foreground hover:bg-foreground hover:text-background font-bold">
-              <Calendar className="h-5 w-5 mr-2" />
-              Criar Evento
-            </Button>
           </div>
           
           {/* Trust indicators */}
@@ -65,3 +61,4 @@ const Hero = () => {
 };
 
 export default Hero;
+
