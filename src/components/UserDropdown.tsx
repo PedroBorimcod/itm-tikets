@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { User, Settings, Ticket, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -64,11 +63,13 @@ const UserDropdown = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
+        {/* "Meus Ingressos" sempre deve aparecer */}
+        <DropdownMenuItem onClick={() => navigate('/my-tickets')}>
+          <Ticket className="mr-2 h-4 w-4" />
+          {t('user.myTickets') ?? "Meus Ingressos"}
+        </DropdownMenuItem>
         {hasTickets && (
-          <DropdownMenuItem onClick={() => navigate('/my-tickets')}>
-            <Ticket className="mr-2 h-4 w-4" />
-            {t('user.myTickets')}
-          </DropdownMenuItem>
+          <></>
         )}
         <DropdownMenuItem onClick={() => navigate('/profile')}>
           <User className="mr-2 h-4 w-4" />
