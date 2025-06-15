@@ -6,13 +6,11 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Link, useNavigate } from 'react-router-dom';
 import { Ticket, User, LogIn, Building2 } from 'lucide-react';
 import UserDropdown from './UserDropdown';
-import { useAdminRole } from '@/hooks/useAdminRole';
 
 const Navbar = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { isAdmin, loading: adminLoading } = useAdminRole();
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -30,7 +28,7 @@ const Navbar = () => {
 
           <div className="flex items-center space-x-4">
             {/* Exibe "Produtoras" somente para administradores */}
-            {isAdmin && (
+            {user?.email === 'pepedr13@gmail.com' && (
               <Button
                 variant="ghost"
                 onClick={() => navigate('/producer-auth')}
@@ -41,21 +39,15 @@ const Navbar = () => {
               </Button>
             )}
 
-            {isAdmin && (
+            {user?.email === 'pepedr13@gmail.com' && (
               <Button
                 variant="ghost"
                 onClick={() => navigate('/admin/events')}
+                // Deixa o botão Administração menor em telas pequenas
                 className="h-7 px-2 text-xs min-w-0 sm:h-10 sm:px-4 sm:text-sm"
               >
                 Administração
               </Button>
-            )}
-
-            {/* Mostra status do admin para debug */}
-            {user && !adminLoading && (
-              <span className="text-xs text-muted-foreground ml-2">
-                {isAdmin ? 'Admin' : 'Usuário comum'}
-              </span>
             )}
 
             {user ? (

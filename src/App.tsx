@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +19,6 @@ import ProducerAuth from "./pages/ProducerAuth";
 import ProducerDashboard from "./pages/ProducerDashboard";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
-import AdminsManage from "./pages/AdminsManage";
 
 const queryClient = new QueryClient();
 
@@ -43,7 +43,6 @@ const App = () => (
                   <Route path="/producer-auth" element={<ProducerAuth />} />
                   <Route path="/producer-dashboard" element={<ProducerDashboard />} />
                   <Route path="/payment-success" element={<PaymentSuccess />} />
-                  <Route path="/admin/admins" element={<AdminsManage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

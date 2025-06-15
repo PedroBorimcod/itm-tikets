@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Tables } from '@/integrations/supabase/types';
 import { ImageDropzone } from "@/components/ImageDropzone";
-import { useAdminRole } from '@/hooks/useAdminRole';
 
 type Event = Tables<'events'>;
 type Producer = Tables<'producers'>;
@@ -54,18 +53,14 @@ const AdminEvents = () => {
   
   const [loading, setLoading] = useState(false);
 
-  const { isAdmin, loading: adminLoading } = useAdminRole();
-
   useEffect(() => {
-    if (!adminLoading && !isAdmin) {
+    if (user?.email !== 'pepedr13@gmail.com') {
       navigate('/');
       return;
     }
-    if (isAdmin) {
-      loadEvents();
-      loadProducers();
-    }
-  }, [user, isAdmin, adminLoading, navigate]);
+    loadEvents();
+    loadProducers();
+  }, [user, navigate]);
 
   const loadEvents = async () => {
     const { data, error } = await supabase
@@ -224,7 +219,7 @@ const AdminEvents = () => {
     }
   };
 
-  if (!isAdmin) {
+  if (user?.email !== 'pepedr13@gmail.com') {
     return null;
   }
 
@@ -245,22 +240,13 @@ const AdminEvents = () => {
             </Button>
             <h1 className="text-2xl md:text-3xl font-black">Administração</h1>
           </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => navigate('/admin/producers')}
-              className="w-full md:w-auto"
-            >
-              <Users className="h-4 w-4 mr-2" />
-              Gerenciar Produtoras
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/admins')}
-              variant="secondary"
-              className="w-full md:w-auto"
-            >
-              Gerenciar Administradores
-            </Button>
-          </div>
+          <Button
+            onClick={() => navigate('/admin/producers')}
+            className="w-full md:w-auto"
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Gerenciar Produtoras
+          </Button>
         </div>
 
         {/* Grids em coluna no mobile e lado a lado em telas grandes */}
