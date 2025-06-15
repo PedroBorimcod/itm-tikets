@@ -22,14 +22,17 @@ const Navbar = () => {
           </Link>
 
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/producer-auth')}
-              className="hidden md:flex"
-            >
-              <Building2 className="h-4 w-4 mr-2" />
-              Produtoras
-            </Button>
+            {/* Exibe "Produtoras" somente para administradores */}
+            {user?.email === 'pepedr13@gmail.com' && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/producer-auth')}
+                className="hidden md:flex"
+              >
+                <Building2 className="h-4 w-4 mr-2" />
+                Produtoras
+              </Button>
+            )}
 
             {user?.email === 'pepedr13@gmail.com' && (
               <Button variant="ghost" onClick={() => navigate('/admin/events')}>
@@ -53,3 +56,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
