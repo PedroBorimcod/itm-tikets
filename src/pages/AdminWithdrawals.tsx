@@ -1,8 +1,10 @@
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 type Withdrawal = {
@@ -26,6 +28,7 @@ export default function AdminWithdrawals() {
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [producers, setProducers] = useState<{ [id: string]: Producer }>({});
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadAllWithdrawals() {
@@ -42,7 +45,6 @@ export default function AdminWithdrawals() {
       }
       setWithdrawals(allWithdrawals ?? []);
 
-      // Fetch producers
       const producerIds = Array.from(new Set((allWithdrawals ?? []).map((w: Withdrawal) => w.producer_id).filter(Boolean)));
       if (producerIds.length > 0) {
         const { data: prodList } = await supabase
@@ -64,6 +66,15 @@ export default function AdminWithdrawals() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
+        <div className="mb-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/admin/events")}
+            className="flex items-center gap-2"
+          >
+            ← Voltar
+          </Button>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle>Painel de Saques dos Produtores</CardTitle>
@@ -145,3 +156,4 @@ export default function AdminWithdrawals() {
     </div>
   );
 }
+
