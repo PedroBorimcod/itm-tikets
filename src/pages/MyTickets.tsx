@@ -144,30 +144,30 @@ const MyTickets = () => {
                   <img 
                     src={ticket.events?.image || "/placeholder.svg"} 
                     alt={ticket.events?.title}
-                    className="w-full h-32 object-cover transition-all duration-200"
+                    className="w-full h-24 object-cover transition-all duration-200"
                   />
                   <Badge className="absolute top-2 right-2 bg-green-600">
                     Confirmado
                   </Badge>
                 </div>
-                <CardHeader className="pt-3 pb-1 px-4">
-                  <CardTitle className="font-black text-base line-clamp-2">
+                <CardHeader className="pt-2 pb-1 px-2">
+                  <CardTitle className="font-black text-xs line-clamp-2">
                     {ticket.events?.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 px-4 pb-4 pt-0">
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3 mr-2" />
+                <CardContent className="space-y-1 px-2 pb-2 pt-0">
+                  <div className="flex items-center text-[10px] text-muted-foreground">
+                    <Calendar className="h-3 w-3 mr-1" />
                     <span>{ticket.events?.date} às {ticket.events?.time}</span>
                   </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3 mr-2" />
+                  <div className="flex items-center text-[10px] text-muted-foreground">
+                    <MapPin className="h-3 w-3 mr-1" />
                     <span className="truncate">{ticket.events?.location}</span>
                   </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center text-xs">
-                      <QrCode className="h-3 w-3 mr-2" />
-                      <span className="font-mono text-xs">
+                  <div className="flex items-center justify-between gap-1">
+                    <div className="flex items-center text-[10px]">
+                      <QrCode className="h-3 w-3 mr-1" />
+                      <span className="font-mono text-[10px]">
                         {Array.isArray(ticket.qr_code) 
                           ? (ticket.qr_code[0] || "—")
                           : (ticket.qr_code || "—")}
@@ -184,15 +184,15 @@ const MyTickets = () => {
                       <Trash2 className="h-5 w-5" />
                     </Button>
                   </div>
-                  <div className="text-base font-bold text-primary mt-1">
+                  <div className="text-xs font-bold text-primary mt-1">
                     R$ {ticket.price?.toFixed(2).replace('.', ',')}
                   </div>
                   <Button
                     variant="secondary"
                     onClick={() => handleShowQRCodes(ticket)}
-                    className="w-full mt-1 h-9 text-xs"
+                    className="w-full mt-1 h-7 text-[10px]"
                   >
-                    <QrCode className="mr-2 h-4 w-4" />
+                    <QrCode className="mr-2 h-3 w-3" />
                     Ver QR Codes
                   </Button>
                 </CardContent>
