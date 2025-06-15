@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { supabase } from "@/integrations/supabase/client";
+import { SUPABASE_URL } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -57,7 +58,7 @@ const AdminsManage = () => {
 
     // Não temos acesso ao auth.users direto, então não é possível inserir admin para email que nunca logou.
     // Avisar isso ao usuário.
-    const apiUrl = `${supabase.supabaseUrl}/rest/v1/profiles?select=id&email=eq.${email}`;
+    const apiUrl = `${SUPABASE_URL}/rest/v1/profiles?select=id&email=eq.${email}`;
     const resp = await fetch(apiUrl, {
       headers: {
         apikey: (supabase as any).apikey,
