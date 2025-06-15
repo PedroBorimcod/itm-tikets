@@ -13,6 +13,15 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Tables } from '@/integrations/supabase/types';
 import { ImageDropzone } from "@/components/ImageDropzone";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 type Event = Tables<'events'>;
 type Producer = Tables<'producers'>;
@@ -219,6 +228,61 @@ const AdminEvents = () => {
     }
   };
 
+  // Modal de novo admin
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminName, setAdminName] = useState('');
+  const [adminLoading, setAdminLoading] = useState(false);
+
+  const handleCreateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminLoading(true);
+
+    // 1. Cria usuário no Auth
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: adminEmail,
+      password: adminPassword,
+      user_metadata: { full_name: adminName },
+      email_confirm: true,
+    });
+
+    if (error || !data?.user?.id) {
+      toast({
+        title: 'Erro ao criar usuário',
+        description: error?.message || 'Não foi possível criar o admin no Auth.',
+        variant: 'destructive'
+      });
+      setAdminLoading(false);
+      return;
+    }
+    // 2. Adiciona função admin ao user_roles
+    const { error: roleError } = await supabase.from('user_roles').insert([
+      {
+        user_id: data.user.id,
+        role: 'admin'
+      }
+    ]);
+    setAdminLoading(false);
+
+    if (roleError) {
+      toast({
+        title: 'Usuário criado, mas erro ao atribuir admin',
+        description: roleError.message,
+        variant: 'destructive'
+      });
+    } else {
+      toast({
+        title: 'Novo admin cadastrado!',
+        description: `Usuário ${adminEmail} já pode acessar o painel administrativo.`
+      });
+      setShowAdminModal(false);
+      setAdminEmail('');
+      setAdminName('');
+      setAdminPassword('');
+    }
+  };
+
   if (user?.email !== 'pepedr13@gmail.com') {
     return null;
   }
@@ -226,28 +290,78 @@ const AdminEvents = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Container responsivo com padding extra em mobile */}
-      <div className="container mx-auto px-2 md:px-4 py-5 md:py-8">
+      <div className="container mx-auto px-4 py-8">
         {/* Cabeçalho responsivo */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0 mb-6 md:mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/')}
-              className="w-full sm:w-auto"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar à tela inicial
-            </Button>
-            <h1 className="text-2xl md:text-3xl font-black">Administração</h1>
-          </div>
+        <div className="flex items-center gap-4 mb-8">
           <Button
-            onClick={() => navigate('/admin/producers')}
-            className="w-full md:w-auto"
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="w-full sm:w-auto"
           >
-            <Users className="h-4 w-4 mr-2" />
-            Gerenciar Produtoras
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar à tela inicial
+          </Button>
+          <h1 className="text-2xl md:text-3xl font-black">Administração</h1>
+          <Button
+            variant="secondary"
+            className="ml-auto"
+            onClick={() => setShowAdminModal(true)}
+          >
+            Criar novo admin
           </Button>
         </div>
+
+        {/* Modal para cadastro de novo admin */}
+        <Dialog open={showAdminModal} onOpenChange={setShowAdminModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Cadastrar Novo Admin</DialogTitle>
+              <DialogDescription>
+                Preencha os dados do novo usuário que poderá acessar a administração.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateAdmin} className="space-y-4 my-2">
+              <div>
+                <Label htmlFor="admin-name">Nome</Label>
+                <Input
+                  id="admin-name"
+                  value={adminName}
+                  onChange={e => setAdminName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="admin-email">Email</Label>
+                <Input
+                  id="admin-email"
+                  type="email"
+                  value={adminEmail}
+                  onChange={e => setAdminEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="admin-password">Senha</Label>
+                <Input
+                  id="admin-password"
+                  type="password"
+                  value={adminPassword}
+                  onChange={e => setAdminPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setShowAdminModal(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={adminLoading}>
+                  {adminLoading ? "Cadastrando..." : "Cadastrar admin"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         {/* Grids em coluna no mobile e lado a lado em telas grandes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
