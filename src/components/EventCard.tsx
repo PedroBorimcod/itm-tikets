@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Users, Eye } from 'lucide-react';
@@ -40,8 +39,8 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
     <div
       className={`
         relative w-full
-        // Quadrado só no mobile, altura = largura até md
-        aspect-square md:aspect-auto md:h-auto
+        aspect-square md:aspect-auto
+        md:h-auto
         flex flex-col
         bg-card 
         border-2 border-border hover:border-primary 
@@ -50,16 +49,15 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
         hover:shadow-lg 
         transition-all duration-300
         cursor-pointer
-        // Altura fixa mobile para garantir alinhamento
-        max-h-[320px] h-full min-h-[0] md:max-h-none
+        /* Aumenta levemente a altura máxima só em mobile */
+        max-h-[370px] h-full min-h-[0] md:max-h-none
       `}
       onClick={() => onViewDetails(event)}
       style={{
-        // Para manter altura = largura só mobile
-        height: '100vw',
-        maxHeight: 320, // fallback para mobile preview
+        height: '100vw', // mantém quadrado no mobile
+        maxHeight: 370, // AUMENTADO de 320 para 370
         minHeight: 0,
-        // Em telas md+ normal (sobrescrito pelas classes acima)
+        // Em md+ sobrescrito pelo Tailwind
       }}
     >
       {/* Imagem quadrada na parte superior */}
