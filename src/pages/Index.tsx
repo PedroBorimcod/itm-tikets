@@ -202,7 +202,8 @@ const Index = () => {
               Por que escolher a ITM Tikets?
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          {/* Altere o grid para 3 colunas em todos tamanhos de tela */}
+          <div className="grid grid-cols-3 gap-4 md:gap-6">
             <div className="flex flex-col md:items-center md:text-center text-left">
               <h3 className="text-lg md:text-2xl font-black text-primary mb-1">
                 500+
