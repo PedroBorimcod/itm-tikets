@@ -225,28 +225,38 @@ const AdminEvents = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/')}>
+      {/* Container responsivo com padding extra em mobile */}
+      <div className="container mx-auto px-2 md:px-4 py-5 md:py-8">
+        {/* Cabeçalho responsivo */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0 mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/')}
+              className="w-full sm:w-auto"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar à tela inicial
             </Button>
-            <h1 className="text-3xl font-black">Administração</h1>
+            <h1 className="text-2xl md:text-3xl font-black">Administração</h1>
           </div>
-          <Button onClick={() => navigate('/admin/producers')}>
+          <Button
+            onClick={() => navigate('/admin/producers')}
+            className="w-full md:w-auto"
+          >
             <Users className="h-4 w-4 mr-2" />
             Gerenciar Produtoras
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Grids em coluna no mobile e lado a lado em telas grandes */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           <Card>
             <CardHeader>
-              <CardTitle>Criar Novo Evento</CardTitle>
+              <CardTitle className="text-lg md:text-xl">Criar Novo Evento</CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="title">Título</Label>
                   <Input
@@ -254,6 +264,7 @@ const AdminEvents = () => {
                     value={formData.title}
                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                     required
+                    className="w-full"
                   />
                 </div>
                 
@@ -263,10 +274,12 @@ const AdminEvents = () => {
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    className="w-full"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Data e horário: responsivo */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="date">Data</Label>
                     <Input
@@ -275,6 +288,7 @@ const AdminEvents = () => {
                       value={formData.date}
                       onChange={(e) => setFormData({...formData, date: e.target.value})}
                       required
+                      className="w-full"
                     />
                   </div>
                   
@@ -286,6 +300,7 @@ const AdminEvents = () => {
                       value={formData.time}
                       onChange={(e) => setFormData({...formData, time: e.target.value})}
                       required
+                      className="w-full"
                     />
                   </div>
                 </div>
@@ -297,13 +312,17 @@ const AdminEvents = () => {
                     value={formData.location}
                     onChange={(e) => setFormData({...formData, location: e.target.value})}
                     required
+                    className="w-full"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="category">Categoria</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
-                    <SelectTrigger>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({...formData, category: value})}
+                  >
+                    <SelectTrigger className="w-full" >
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
@@ -318,8 +337,11 @@ const AdminEvents = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="producer">Produtora</Label>
-                  <Select value={formData.producer_id} onValueChange={(value) => setFormData({...formData, producer_id: value})}>
-                    <SelectTrigger>
+                  <Select
+                    value={formData.producer_id}
+                    onValueChange={(value) => setFormData({...formData, producer_id: value})}
+                  >
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione uma produtora (opcional)" />
                     </SelectTrigger>
                     <SelectContent>
@@ -339,6 +361,7 @@ const AdminEvents = () => {
                     type="url"
                     value={formData.image}
                     onChange={(e) => setFormData({...formData, image: e.target.value})}
+                    className="w-full"
                   />
                 </div>
 
@@ -368,7 +391,7 @@ const AdminEvents = () => {
                       </div>
                       
                       {ticketType.enabled && (
-                        <div className="grid grid-cols-2 gap-3 ml-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 ml-3 sm:ml-6">
                           <div className="space-y-1">
                             <Label className="text-sm">Preço (R$)</Label>
                             <Input
@@ -378,6 +401,7 @@ const AdminEvents = () => {
                               value={ticketType.price}
                               onChange={(e) => updateTicketType(index, 'price', e.target.value)}
                               required={ticketType.enabled}
+                              className="w-full"
                             />
                           </div>
                           <div className="space-y-1">
@@ -388,6 +412,7 @@ const AdminEvents = () => {
                               value={ticketType.capacity}
                               onChange={(e) => updateTicketType(index, 'capacity', e.target.value)}
                               required={ticketType.enabled}
+                              className="w-full"
                             />
                           </div>
                         </div>
@@ -396,7 +421,11 @@ const AdminEvents = () => {
                   ))}
                 </div>
                 
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading}
+                >
                   {loading ? 'Criando...' : 'Criar Evento'}
                 </Button>
               </form>
@@ -405,7 +434,7 @@ const AdminEvents = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Eventos Criados</CardTitle>
+              <CardTitle className="text-lg md:text-xl">Eventos Criados</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -413,7 +442,10 @@ const AdminEvents = () => {
                   <p className="text-muted-foreground">Nenhum evento criado</p>
                 ) : (
                   events.map((event) => (
-                    <div key={event.id} className="flex items-center justify-between p-4 border rounded">
+                    <div
+                      key={event.id}
+                      className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-0 p-4 border rounded"
+                    >
                       <div>
                         <h3 className="font-semibold">{event.title}</h3>
                         <p className="text-sm text-muted-foreground">{event.date} - {event.location}</p>
@@ -425,6 +457,7 @@ const AdminEvents = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(event.id)}
+                        className="mt-2 md:mt-0 self-end md:self-auto"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
