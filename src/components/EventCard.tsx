@@ -39,8 +39,10 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
   const isSoldOut = availableTickets <= 0;
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 border-border hover:border-primary cursor-pointer">
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 border-border hover:border-primary cursor-pointer
+      p-0">
       <div className="relative" onClick={() => onViewDetails(event)}>
+        {/* Mantém quadrado, mas ajusta a altura da imagem em telas pequenas */}
         <AspectRatio ratio={1 / 1}>
           <img
             src={event.image || "/placeholder.svg"}
@@ -71,41 +73,47 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
         )}
       </div>
 
-      <CardHeader onClick={() => onViewDetails(event)}>
-        <CardTitle className="font-black text-foreground line-clamp-2">
+      {/* Menor padding/header em mobile */}
+      <CardHeader 
+        onClick={() => onViewDetails(event)} 
+        className="py-2 px-3 md:py-6 md:px-6"
+      >
+        <CardTitle className="font-black text-foreground line-clamp-2 text-base md:text-xl">
           {event.title}
         </CardTitle>
-        <CardDescription className="font-medium line-clamp-2">
+        <CardDescription className="font-medium line-clamp-2 text-xs md:text-base">
           {event.description}
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-4" onClick={() => onViewDetails(event)}>
-        <div className="flex items-center text-sm text-muted-foreground">
+      {/* Menos espaço e fontes menores em mobile */}
+      <CardContent 
+        className="space-y-2 md:space-y-4 p-3 pt-0 md:p-6 md:pt-0"
+        onClick={() => onViewDetails(event)}
+      >
+        <div className="flex items-center text-xs md:text-sm text-muted-foreground">
           <CalendarDays className="h-4 w-4 mr-2 text-primary" />
           <span className="font-bold">{formatDate(event.date)} às {event.time}</span>
         </div>
-
-        <div className="flex items-center text-sm text-muted-foreground">
+        <div className="flex items-center text-xs md:text-sm text-muted-foreground">
           <MapPin className="h-4 w-4 mr-2 text-primary" />
           <span className="font-medium">{event.location}</span>
         </div>
-
-        <div className="flex items-center text-sm text-muted-foreground">
+        <div className="flex items-center text-xs md:text-sm text-muted-foreground">
           <Users className="h-4 w-4 mr-2 text-primary" />
           <span className="font-medium">
             {availableTickets} ingressos disponíveis
           </span>
         </div>
-
-        <div className="text-2xl font-black text-primary">
+        <div className="text-lg md:text-2xl font-black text-primary">
           A partir de R$ {event.price.toFixed(2).replace('.', ',')}
         </div>
       </CardContent>
 
-      <CardFooter>
+      {/* Menor footer em mobile */}
+      <CardFooter className="p-2 pt-0 md:p-6 md:pt-0">
         <Button
-          className="w-full bg-primary hover:bg-primary/90 text-white font-bold"
+          className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2 md:py-3 text-xs md:text-base"
           onClick={(e) => {
             e.stopPropagation();
             onViewDetails(event);
@@ -120,4 +128,3 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
 };
 
 export default EventCard;
-
