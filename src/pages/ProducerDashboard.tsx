@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Tables } from '@/integrations/supabase/types';
+import WithdrawModal from "@/components/WithdrawModal";
 
 type Event = Tables<'events'>;
 type Transaction = Tables<'transactions'>;
@@ -24,6 +24,7 @@ const ProducerDashboard = () => {
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
 
   useEffect(() => {
     if (producer) {
@@ -61,10 +62,26 @@ const ProducerDashboard = () => {
     if (withdrawalsData) setWithdrawals(withdrawalsData);
   };
 
-  const handleWithdraw = async () => {
-    if (!producer || !withdrawAmount) return;
+  const handleWithdraw = async ({
+    withdrawAmount: withdrawAmountParam,
+    method,
+    pixKey,
+    bankName,
+    bankAgency,
+    bankAccount,
+    bankHolder,
+  }: {
+    withdrawAmount: string;
+    method: "pix" | "bank";
+    pixKey?: string;
+    bankName?: string;
+    bankAgency?: string;
+    bankAccount?: string;
+    bankHolder?: string;
+  }) => {
+    if (!producer || !withdrawAmountParam) return;
 
-    const amount = parseFloat(withdrawAmount);
+    const amount = parseFloat(withdrawAmountParam);
     if (amount <= 0 || amount > producer.balance) {
       toast({
         title: "Valor inválido",
@@ -75,12 +92,12 @@ const ProducerDashboard = () => {
     }
 
     setLoading(true);
-    
+
     // Calculate fee (R$ 8.00 per ticket sold)
     const ticketsSold = transactions
       .filter(t => t.type === 'sale')
       .reduce((sum, t) => sum + 1, 0);
-    
+
     const feePerTicket = 8.00;
     const totalFee = ticketsSold * feePerTicket;
     const netAmount = amount - totalFee;
@@ -96,17 +113,23 @@ const ProducerDashboard = () => {
     }
 
     try {
+      // Salva juntamente os dados de conta/pix no saque!
       const { error } = await supabase.from('withdrawals').insert({
         producer_id: producer.id,
-        amount,
+        amount: amount,
         fee: totalFee,
         net_amount: netAmount,
-        status: 'pending'
+        status: 'pending',
+        method,
+        pix_key: method === "pix" ? pixKey : null,
+        bank_name: method === "bank" ? bankName : null,
+        bank_agency: method === "bank" ? bankAgency : null,
+        bank_account: method === "bank" ? bankAccount : null,
+        bank_holder: method === "bank" ? bankHolder : null,
       });
 
       if (error) throw error;
 
-      // Create withdrawal transaction
       await supabase.from('transactions').insert({
         producer_id: producer.id,
         type: 'withdrawal',
@@ -114,7 +137,6 @@ const ProducerDashboard = () => {
         description: 'Saque solicitado'
       });
 
-      // Create fee transaction
       await supabase.from('transactions').insert({
         producer_id: producer.id,
         type: 'fee',
@@ -128,6 +150,7 @@ const ProducerDashboard = () => {
       });
 
       setWithdrawAmount('');
+      setShowWithdrawModal(false);
       loadData();
     } catch (error) {
       console.error('Withdrawal error:', error);
@@ -206,20 +229,13 @@ const ProducerDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Input
-                type="number"
-                placeholder="Valor do saque"
-                value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(e.target.value)}
-                max={producer.balance || 0}
-              />
-              <Button 
-                onClick={handleWithdraw}
-                disabled={loading || !withdrawAmount}
+              <Button
+                onClick={() => setShowWithdrawModal(true)}
                 className="w-full"
+                disabled={loading}
               >
                 <CreditCard className="h-4 w-4 mr-2" />
-                {loading ? 'Processando...' : 'Solicitar Saque'}
+                Solicitar Saque
               </Button>
             </CardContent>
           </Card>
@@ -284,6 +300,15 @@ const ProducerDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      <WithdrawModal
+        open={showWithdrawModal}
+        onClose={() => setShowWithdrawModal(false)}
+        onConfirm={handleWithdraw}
+        withdrawAmount={withdrawAmount}
+        setWithdrawAmount={setWithdrawAmount}
+        loading={loading}
+      />
     </div>
   );
 };
