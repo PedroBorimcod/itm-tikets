@@ -9,6 +9,7 @@ import EventCard from '@/components/EventCard';
 import EventDetailsModal from '@/components/EventDetailsModal';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
+import Footer from '@/components/Footer';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -224,6 +225,8 @@ const Index = () => {
           </Button>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
