@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User, Settings, Ticket, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,11 +12,40 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const UserDropdown = () => {
   const { user, signOut } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+
+  const [hasTickets, setHasTickets] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      if (!user) {
+        setHasTickets(false);
+        return;
+      }
+      const { data, error } = await supabase
+        .from('order_items')
+        .select('id')
+        .eq('orders.user_id', user.id)
+        .limit(1)
+        .select(`
+          id,
+          orders:user_id
+        `);
+      // Se encontrar algum registro, então possui ingresso
+      if (data && data.length > 0) {
+        setHasTickets(true);
+      } else {
+        setHasTickets(false);
+      }
+    };
+
+    fetchTickets();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -35,10 +64,12 @@ const UserDropdown = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem onClick={() => navigate('/my-tickets')}>
-          <Ticket className="mr-2 h-4 w-4" />
-          {t('user.myTickets')}
-        </DropdownMenuItem>
+        {hasTickets && (
+          <DropdownMenuItem onClick={() => navigate('/my-tickets')}>
+            <Ticket className="mr-2 h-4 w-4" />
+            {t('user.myTickets')}
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={() => navigate('/profile')}>
           <User className="mr-2 h-4 w-4" />
           {t('user.myData')}
