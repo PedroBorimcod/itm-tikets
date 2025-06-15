@@ -1,9 +1,7 @@
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Users, Eye } from 'lucide-react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface Event {
   id: string;
@@ -39,12 +37,12 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
   const isSoldOut = availableTickets <= 0;
 
   return (
-    <div 
-      className="
-        relative 
-        w-full 
-        aspect-square 
-        flex flex-col 
+    <div
+      className={`
+        relative w-full
+        // Quadrado só no mobile, altura = largura até md
+        aspect-square md:aspect-auto md:h-auto
+        flex flex-col
         bg-card 
         border-2 border-border hover:border-primary 
         rounded-lg 
@@ -52,76 +50,88 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
         hover:shadow-lg 
         transition-all duration-300
         cursor-pointer
-        "
+        // Altura fixa mobile para garantir alinhamento
+        max-h-[320px] h-full min-h-[0] md:max-h-none
+      `}
       onClick={() => onViewDetails(event)}
-      >
+      style={{
+        // Para manter altura = largura só mobile
+        height: '100vw',
+        maxHeight: 320, // fallback para mobile preview
+        minHeight: 0,
+        // Em telas md+ normal (sobrescrito pelas classes acima)
+      }}
+    >
       {/* Imagem quadrada na parte superior */}
-      <div className="relative w-full aspect-square">
+      <div className="relative w-full aspect-square h-1/2">
         <img
           src={event.image || "/placeholder.svg"}
           alt={event.title}
           className="w-full h-full object-cover"
         />
         <Badge
-          className="absolute top-2 right-2 bg-primary text-white font-bold z-10"
+          className="absolute top-1.5 right-1.5 bg-primary text-white font-bold z-10 text-[10px] md:text-xs py-[1.5px] px-2"
         >
           {event.category}
         </Badge>
         {isLowStock && !isSoldOut && (
           <Badge
             variant="destructive"
-            className="absolute top-2 left-2 font-bold z-10"
+            className="absolute top-1.5 left-1.5 font-bold z-10 text-[10px] md:text-xs py-[1.5px] px-2"
           >
-            Últimos ingressos!
+            Últimos!
           </Badge>
         )}
         {isSoldOut && (
           <Badge
             variant="secondary"
-            className="absolute top-2 left-2 bg-gray-600 text-white font-bold z-10"
+            className="absolute top-1.5 left-1.5 bg-gray-600 text-white font-bold z-10 text-[10px] md:text-xs py-[1.5px] px-2"
           >
             Esgotado
           </Badge>
         )}
       </div>
-
       {/* Conteúdo abaixo da imagem */}
-      <div className="relative flex flex-col justify-between flex-1 px-2 py-1 md:px-4 md:py-3">
-        <div className="w-full">
-          <h3 className="font-black text-foreground line-clamp-2 text-sm md:text-lg leading-tight mb-0.5">
+      <div className="flex flex-col justify-between flex-1 px-1.5 py-1 md:px-4 md:py-3">
+        <div className="w-full flex flex-col gap-0.5 md:gap-2 flex-1">
+          <h3 className="font-black text-foreground line-clamp-2 text-[12px] md:text-lg leading-tight mb-0.5 text-center">
             {event.title}
           </h3>
-          <p className="font-medium line-clamp-2 text-xs md:text-sm text-muted-foreground mb-1">
+          <p className="line-clamp-2 text-[9px] md:text-sm text-muted-foreground mb-0 text-center">
             {event.description}
           </p>
-          <div className="flex items-center gap-1 text-[11px] md:text-xs text-muted-foreground mb-0.5">
-            <CalendarDays className="h-3 w-3 mr-1 text-primary" />
+          <div className="flex items-center gap-1 text-[9px] md:text-xs text-muted-foreground mb-0.5 justify-center">
+            <CalendarDays className="h-2.5 w-2.5 mr-1 text-primary" />
             <span className="font-bold">{formatDate(event.date)} às {event.time}</span>
           </div>
-          <div className="flex items-center gap-1 text-[11px] md:text-xs text-muted-foreground mb-0.5">
-            <MapPin className="h-3 w-3 mr-1 text-primary" />
+          <div className="flex items-center gap-1 text-[9px] md:text-xs text-muted-foreground mb-0.5 justify-center">
+            <MapPin className="h-2.5 w-2.5 mr-1 text-primary" />
             <span className="font-medium">{event.location}</span>
           </div>
-          <div className="flex items-center gap-1 text-[11px] md:text-xs text-muted-foreground">
-            <Users className="h-3 w-3 mr-1 text-primary" />
+          <div className="flex items-center gap-1 text-[9px] md:text-xs text-muted-foreground justify-center">
+            <Users className="h-2.5 w-2.5 mr-1 text-primary" />
             <span className="font-medium">
-              {availableTickets} ingressos disponíveis
+              {availableTickets} ingressos
             </span>
           </div>
         </div>
-        <div className="mt-1 mb-2">
-          <span className="text-base md:text-xl font-black text-primary block">
+        <div className="mt-0.5 mb-2 flex flex-col items-center">
+          <span className="text-[13px] md:text-xl font-black text-primary block leading-tight">
             R$ {event.price.toFixed(2).replace('.', ',')}
           </span>
         </div>
         <Button
-          className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-1.5 md:py-3 text-xs md:text-base mt-auto"
+          className="
+            w-full 
+            bg-primary hover:bg-primary/90 text-white font-bold 
+            py-1 md:py-3 text-[11px] md:text-base mt-auto
+          "
           onClick={(e) => {
             e.stopPropagation();
             onViewDetails(event);
           }}
         >
-          <Eye className="h-4 w-4 mr-1" />
+          <Eye className="h-3 w-3 mr-1 md:h-4 md:w-4" />
           Ver Detalhes
         </Button>
       </div>
@@ -130,4 +140,3 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
 };
 
 export default EventCard;
-
