@@ -112,17 +112,6 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
             </span>
           </div>
         </div>
-        {/* Valor absoluto no rodapé, sempre visível */}
-        <span
-          className="
-            absolute left-0 right-0 bottom-1 md:bottom-3 
-            text-center text-[15px] md:text-2xl font-black text-primary 
-            leading-tight pointer-events-none select-none
-          "
-          style={{ zIndex: 3 }}
-        >
-          R$ {event.price.toFixed(2).replace('.', ',')}
-        </span>
       </div>
     </div>
   );
