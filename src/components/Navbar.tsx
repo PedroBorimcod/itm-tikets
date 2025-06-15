@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +12,7 @@ const Navbar = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { isAdmin } = useAdminRole();
+  const { isAdmin, loading: adminLoading } = useAdminRole();
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -44,11 +45,17 @@ const Navbar = () => {
               <Button
                 variant="ghost"
                 onClick={() => navigate('/admin/events')}
-                // Deixa o botão Administração menor em telas pequenas
                 className="h-7 px-2 text-xs min-w-0 sm:h-10 sm:px-4 sm:text-sm"
               >
                 Administração
               </Button>
+            )}
+
+            {/* Mostra status do admin para debug */}
+            {user && !adminLoading && (
+              <span className="text-xs text-muted-foreground ml-2">
+                {isAdmin ? 'Admin' : 'Usuário comum'}
+              </span>
             )}
 
             {user ? (
@@ -67,3 +74,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+

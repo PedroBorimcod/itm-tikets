@@ -26,16 +26,21 @@ export function useAdminRole() {
           .select("*")
           .eq("user_id", user.id)
           .eq("role", "admin");
+
         if (error) {
+          console.log('Erro ao checar/atribuir admin:', error);
           setIsAdmin(false); setLoading(false); return;
         }
 
         if (!roles || roles.length === 0) {
           // Insere role admin para esse usuário
+          console.log('Atribuindo papel admin para:', user.email);
           await supabase.from("user_roles").insert({
             user_id: user.id,
             role: "admin",
           });
+        } else {
+          console.log('Usuário já é admin:', user.email);
         }
         setIsAdmin(true); setLoading(false); return;
       }
@@ -48,6 +53,7 @@ export function useAdminRole() {
       if (!ignore) {
         setIsAdmin(!!data?.length);
         setLoading(false);
+        console.log('Checando admin para outro usuário:', user.email, 'isAdmin:', !!data?.length);
       }
     }
     checkRole();
@@ -56,3 +62,4 @@ export function useAdminRole() {
 
   return { isAdmin, loading };
 }
+
