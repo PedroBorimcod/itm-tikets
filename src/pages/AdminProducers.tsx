@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Tables } from '@/integrations/supabase/types';
+import { useAdminRole } from '@/hooks/useAdminRole';
 
 type Producer = Tables<'producers'>;
 
@@ -21,14 +22,17 @@ const AdminProducers = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { isAdmin, loading: adminLoading } = useAdminRole();
 
   useEffect(() => {
-    if (user?.email !== 'pepedr13@gmail.com') {
+    if (!adminLoading && !isAdmin) {
       navigate('/');
       return;
     }
-    loadProducers();
-  }, [user, navigate]);
+    if (isAdmin) {
+      loadProducers();
+    }
+  }, [user, isAdmin, adminLoading, navigate]);
 
   const loadProducers = async () => {
     const { data, error } = await supabase
@@ -97,7 +101,7 @@ const AdminProducers = () => {
     }
   };
 
-  if (user?.email !== 'pepedr13@gmail.com') {
+  if (!isAdmin) {
     return null;
   }
 

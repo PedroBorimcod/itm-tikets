@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,11 +5,13 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Link, useNavigate } from 'react-router-dom';
 import { Ticket, User, LogIn, Building2 } from 'lucide-react';
 import UserDropdown from './UserDropdown';
+import { useAdminRole } from '@/hooks/useAdminRole';
 
 const Navbar = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { isAdmin } = useAdminRole();
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -28,7 +29,7 @@ const Navbar = () => {
 
           <div className="flex items-center space-x-4">
             {/* Exibe "Produtoras" somente para administradores */}
-            {user?.email === 'pepedr13@gmail.com' && (
+            {isAdmin && (
               <Button
                 variant="ghost"
                 onClick={() => navigate('/producer-auth')}
@@ -39,7 +40,7 @@ const Navbar = () => {
               </Button>
             )}
 
-            {user?.email === 'pepedr13@gmail.com' && (
+            {isAdmin && (
               <Button
                 variant="ghost"
                 onClick={() => navigate('/admin/events')}
@@ -66,4 +67,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
