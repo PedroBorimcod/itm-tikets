@@ -3,6 +3,7 @@ import React from "react";
 import { QrCode } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { QRCode } from "qrcode.react";
 
 interface TicketQRCodesModalProps {
   open: boolean;
@@ -39,9 +40,16 @@ const TicketQRCodesModal: React.FC<TicketQRCodesModalProps> = ({
             <div key={i} className="flex flex-col items-center">
               <Badge className="mb-2">Ingresso {i + 1}</Badge>
               {qrCodes && qrCodes[i] ? (
-                <div className="bg-white p-2 rounded border">
-                  {/* Aqui, pode-se usar um componente real de QR code, se desejar */}
-                  <div className="font-mono text-base">{qrCodes[i]}</div>
+                <div className="bg-white p-2 rounded border flex flex-col items-center">
+                  <QRCode
+                    value={qrCodes[i]}
+                    size={150}
+                    level="M"
+                    includeMargin={true}
+                  />
+                  <div className="font-mono text-xs text-muted-foreground mt-2 break-all">
+                    {qrCodes[i]}
+                  </div>
                 </div>
               ) : (
                 <div className="text-xs text-muted-foreground">QR code não disponível</div>
@@ -55,4 +63,3 @@ const TicketQRCodesModal: React.FC<TicketQRCodesModalProps> = ({
 };
 
 export default TicketQRCodesModal;
-
