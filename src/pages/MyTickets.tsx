@@ -137,36 +137,36 @@ const MyTickets = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tickets.map((ticket) => (
               <Card key={ticket.id} className="overflow-hidden">
                 <div className="relative">
                   <img 
                     src={ticket.events?.image || "/placeholder.svg"} 
                     alt={ticket.events?.title}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-32 object-cover transition-all duration-200"
                   />
                   <Badge className="absolute top-2 right-2 bg-green-600">
                     Confirmado
                   </Badge>
                 </div>
-                <CardHeader>
-                  <CardTitle className="font-black text-lg">
+                <CardHeader className="pt-3 pb-1 px-4">
+                  <CardTitle className="font-black text-base line-clamp-2">
                     {ticket.events?.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4 mr-2" />
+                <CardContent className="space-y-2 px-4 pb-4 pt-0">
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3 mr-2" />
                     <span>{ticket.events?.date} às {ticket.events?.time}</span>
                   </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    <span>{ticket.events?.location}</span>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3 mr-2" />
+                    <span className="truncate">{ticket.events?.location}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center text-sm">
-                      <QrCode className="h-4 w-4 mr-2" />
+                    <div className="flex items-center text-xs">
+                      <QrCode className="h-3 w-3 mr-2" />
                       <span className="font-mono text-xs">
                         {Array.isArray(ticket.qr_code) 
                           ? (ticket.qr_code[0] || "—")
@@ -184,13 +184,13 @@ const MyTickets = () => {
                       <Trash2 className="h-5 w-5" />
                     </Button>
                   </div>
-                  <div className="text-lg font-bold text-primary">
+                  <div className="text-base font-bold text-primary mt-1">
                     R$ {ticket.price?.toFixed(2).replace('.', ',')}
                   </div>
                   <Button
                     variant="secondary"
                     onClick={() => handleShowQRCodes(ticket)}
-                    className="w-full mt-2"
+                    className="w-full mt-1 h-9 text-xs"
                   >
                     <QrCode className="mr-2 h-4 w-4" />
                     Ver QR Codes
