@@ -309,6 +309,13 @@ const AdminEvents = () => {
           >
             Criar novo admin
           </Button>
+          <Button
+            variant="outline"
+            className="ml-2"
+            onClick={() => navigate('/admin/producers')}
+          >
+            Gerenciar produtoras
+          </Button>
         </div>
 
         {/* Modal para cadastro de novo admin */}
