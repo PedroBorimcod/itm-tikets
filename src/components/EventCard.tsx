@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Users, Eye } from 'lucide-react';
@@ -113,20 +112,6 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
             </span>
           </div>
         </div>
-        <Button
-          className="
-            w-full 
-            bg-primary hover:bg-primary/90 text-white font-bold 
-            py-1.5 md:py-4 text-[12px] md:text-lg mt-auto
-          "
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewDetails(event);
-          }}
-        >
-          <Eye className="h-4 w-4 mr-1 md:h-5 md:w-5" />
-          Ver Detalhes
-        </Button>
         {/* Valor absoluto no rodapé, sempre visível */}
         <span
           className="
@@ -144,4 +129,3 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
 };
 
 export default EventCard;
-
