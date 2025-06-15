@@ -1,5 +1,5 @@
 
-import { mail, whatsapp, telegram } from "lucide-react";
+import { Mail, Whatsapp, Telegram } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -15,7 +15,7 @@ export default function Footer() {
             className="flex items-center text-muted-foreground hover:text-primary transition-colors"
             title="Contato por E-mail"
           >
-            {mail({ className: "h-5 w-5" })}
+            <Mail className="h-5 w-5" />
             <span className="ml-2 hidden md:inline">E-mail</span>
           </a>
           <a
@@ -25,7 +25,7 @@ export default function Footer() {
             className="flex items-center text-muted-foreground hover:text-primary transition-colors"
             title="Contato via WhatsApp"
           >
-            {whatsapp({ className: "h-5 w-5" })}
+            <Whatsapp className="h-5 w-5" />
             <span className="ml-2 hidden md:inline">WhatsApp</span>
           </a>
           <a
@@ -35,7 +35,7 @@ export default function Footer() {
             className="flex items-center text-muted-foreground hover:text-primary transition-colors"
             title="Contato via Telegram"
           >
-            {telegram({ className: "h-5 w-5" })}
+            <Telegram className="h-5 w-5" />
             <span className="ml-2 hidden md:inline">Telegram</span>
           </a>
         </div>
