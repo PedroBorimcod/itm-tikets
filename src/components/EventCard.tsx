@@ -39,26 +39,38 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
   const isSoldOut = availableTickets <= 0;
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 border-border hover:border-primary cursor-pointer
-      p-0">
-      <div className="relative" onClick={() => onViewDetails(event)}>
-        {/* Mantém quadrado, mas ajusta a altura da imagem em telas pequenas */}
-        <AspectRatio ratio={1 / 1}>
-          <img
-            src={event.image || "/placeholder.svg"}
-            alt={event.title}
-            className="w-full h-full object-cover"
-          />
-        </AspectRatio>
+    <div 
+      className="
+        relative 
+        w-full 
+        aspect-square 
+        flex flex-col 
+        bg-card 
+        border-2 border-border hover:border-primary 
+        rounded-lg 
+        overflow-hidden 
+        hover:shadow-lg 
+        transition-all duration-300
+        cursor-pointer
+        "
+      onClick={() => onViewDetails(event)}
+      >
+      {/* Imagem quadrada na parte superior */}
+      <div className="relative w-full aspect-square">
+        <img
+          src={event.image || "/placeholder.svg"}
+          alt={event.title}
+          className="w-full h-full object-cover"
+        />
         <Badge
-          className="absolute top-2 right-2 bg-primary text-white font-bold"
+          className="absolute top-2 right-2 bg-primary text-white font-bold z-10"
         >
           {event.category}
         </Badge>
         {isLowStock && !isSoldOut && (
           <Badge
             variant="destructive"
-            className="absolute top-2 left-2 font-bold"
+            className="absolute top-2 left-2 font-bold z-10"
           >
             Últimos ingressos!
           </Badge>
@@ -66,65 +78,56 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
         {isSoldOut && (
           <Badge
             variant="secondary"
-            className="absolute top-2 left-2 bg-gray-600 text-white font-bold"
+            className="absolute top-2 left-2 bg-gray-600 text-white font-bold z-10"
           >
             Esgotado
           </Badge>
         )}
       </div>
 
-      {/* Menor padding/header em mobile */}
-      <CardHeader 
-        onClick={() => onViewDetails(event)} 
-        className="py-2 px-3 md:py-6 md:px-6"
-      >
-        <CardTitle className="font-black text-foreground line-clamp-2 text-base md:text-xl">
-          {event.title}
-        </CardTitle>
-        <CardDescription className="font-medium line-clamp-2 text-xs md:text-base">
-          {event.description}
-        </CardDescription>
-      </CardHeader>
-
-      {/* Menos espaço e fontes menores em mobile */}
-      <CardContent 
-        className="space-y-2 md:space-y-4 p-3 pt-0 md:p-6 md:pt-0"
-        onClick={() => onViewDetails(event)}
-      >
-        <div className="flex items-center text-xs md:text-sm text-muted-foreground">
-          <CalendarDays className="h-4 w-4 mr-2 text-primary" />
-          <span className="font-bold">{formatDate(event.date)} às {event.time}</span>
+      {/* Conteúdo abaixo da imagem */}
+      <div className="relative flex flex-col justify-between flex-1 px-2 py-1 md:px-4 md:py-3">
+        <div className="w-full">
+          <h3 className="font-black text-foreground line-clamp-2 text-sm md:text-lg leading-tight mb-0.5">
+            {event.title}
+          </h3>
+          <p className="font-medium line-clamp-2 text-xs md:text-sm text-muted-foreground mb-1">
+            {event.description}
+          </p>
+          <div className="flex items-center gap-1 text-[11px] md:text-xs text-muted-foreground mb-0.5">
+            <CalendarDays className="h-3 w-3 mr-1 text-primary" />
+            <span className="font-bold">{formatDate(event.date)} às {event.time}</span>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] md:text-xs text-muted-foreground mb-0.5">
+            <MapPin className="h-3 w-3 mr-1 text-primary" />
+            <span className="font-medium">{event.location}</span>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] md:text-xs text-muted-foreground">
+            <Users className="h-3 w-3 mr-1 text-primary" />
+            <span className="font-medium">
+              {availableTickets} ingressos disponíveis
+            </span>
+          </div>
         </div>
-        <div className="flex items-center text-xs md:text-sm text-muted-foreground">
-          <MapPin className="h-4 w-4 mr-2 text-primary" />
-          <span className="font-medium">{event.location}</span>
-        </div>
-        <div className="flex items-center text-xs md:text-sm text-muted-foreground">
-          <Users className="h-4 w-4 mr-2 text-primary" />
-          <span className="font-medium">
-            {availableTickets} ingressos disponíveis
+        <div className="mt-1 mb-2">
+          <span className="text-base md:text-xl font-black text-primary block">
+            R$ {event.price.toFixed(2).replace('.', ',')}
           </span>
         </div>
-        <div className="text-lg md:text-2xl font-black text-primary">
-          A partir de R$ {event.price.toFixed(2).replace('.', ',')}
-        </div>
-      </CardContent>
-
-      {/* Menor footer em mobile */}
-      <CardFooter className="p-2 pt-0 md:p-6 md:pt-0">
         <Button
-          className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2 md:py-3 text-xs md:text-base"
+          className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-1.5 md:py-3 text-xs md:text-base mt-auto"
           onClick={(e) => {
             e.stopPropagation();
             onViewDetails(event);
           }}
         >
-          <Eye className="h-4 w-4 mr-2" />
-          Ver Detalhes e Comprar
+          <Eye className="h-4 w-4 mr-1" />
+          Ver Detalhes
         </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 };
 
 export default EventCard;
+
