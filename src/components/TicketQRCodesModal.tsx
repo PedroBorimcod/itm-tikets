@@ -19,7 +19,8 @@ const TicketQRCodesModal: React.FC<TicketQRCodesModalProps> = ({
   qrCodes,
   eventTitle,
 }) => {
-  // Sempre mostra um QR code de teste para cada ingresso exibido
+  const qrAvailable = Array.isArray(qrCodes) && qrCodes.length > 0;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -35,20 +36,30 @@ const TicketQRCodesModal: React.FC<TicketQRCodesModalProps> = ({
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-4">
-          {Array.from({ length: quantity }).map((_, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <Badge className="mb-2">Ingresso {i + 1}</Badge>
-              <div className="bg-white p-2 rounded border flex flex-col items-center">
-                {/* Aqui poderia entrar um SVG de QR real, mas vamos mostrar um box de teste */}
-                <div className="w-[150px] h-[150px] bg-gray-100 flex items-center justify-center rounded text-gray-400 font-bold text-2xl mb-2 border-dashed border-2 border-gray-300">
-                  QR TESTE
-                </div>
-                <div className="font-mono text-xs text-muted-foreground mt-2 break-all">
-                  TESTE-123456
+          {!qrAvailable ? (
+            <div className="text-center text-muted-foreground text-sm max-w-xs">
+              Os QR codes para entrada só ficarão disponíveis após a confirmação do pagamento na Stripe.
+              <br />
+              Assim que o pagamento for processado, seus QR codes aparecerão aqui!
+            </div>
+          ) : (
+            Array.from({ length: quantity }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <Badge className="mb-2">Ingresso {i + 1}</Badge>
+                <div className="bg-white p-2 rounded border flex flex-col items-center">
+                  {/* QR real (pode ser um texto ou transformar em SVG posteriormente) */}
+                  <div className="w-[150px] h-[150px] bg-gray-100 flex items-center justify-center rounded text-gray-700 font-mono text-xs border-dashed border-2 border-gray-300 break-all">
+                    {qrCodes[i] || "QR não disponível"}
+                  </div>
+                  {qrCodes[i] && (
+                    <div className="font-mono text-xs text-muted-foreground mt-2 break-all">
+                      {qrCodes[i]}
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </DialogContent>
     </Dialog>
@@ -56,3 +67,4 @@ const TicketQRCodesModal: React.FC<TicketQRCodesModalProps> = ({
 };
 
 export default TicketQRCodesModal;
+
