@@ -49,16 +49,15 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
         hover:shadow-lg 
         transition-all duration-300
         cursor-pointer
-        /* Aumenta levemente a altura máxima só em mobile */
-        max-h-[370px] h-full min-h-[0] 
-        md:max-h-[460px]   <!-- altura desktop aumentada aqui -->
+        max-h-[420px] h-full min-h-[0] 
+        md:max-h-[520px]
       `}
       onClick={() => onViewDetails(event)}
       style={{
-        height: '100vw',         // mantém quadrado no mobile
-        maxHeight: 370,          // mobile: mesmo valor de antes
+        height: '110vw',         // aumentei de 100vw para 110vw para ficar maior no mobile
+        maxHeight: 420,          // mobile: aumentada de 370 para 420
         minHeight: 0,
-        // md+ sobrescrito pelo Tailwind via md:max-h-[460px]
+        // md+ sobrescrito pelo Tailwind via md:max-h-[520px]
       }}
     >
       {/* Imagem quadrada na parte superior */}
@@ -91,31 +90,31 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
         )}
       </div>
       {/* Conteúdo abaixo da imagem */}
-      <div className="flex flex-col justify-between flex-1 px-1.5 py-1 md:px-4 md:py-3">
-        <div className="w-full flex flex-col gap-0.5 md:gap-2 flex-1">
-          <h3 className="font-black text-foreground line-clamp-2 text-[12px] md:text-lg leading-tight mb-0.5 text-center">
+      <div className="flex flex-col justify-between flex-1 px-2.5 py-2 md:px-6 md:py-5">
+        <div className="w-full flex flex-col gap-1 md:gap-3 flex-1">
+          <h3 className="font-black text-foreground line-clamp-2 text-[13px] md:text-xl leading-tight mb-1 text-center">
             {event.title}
           </h3>
-          <p className="line-clamp-2 text-[9px] md:text-sm text-muted-foreground mb-0 text-center">
+          <p className="line-clamp-2 text-[10px] md:text-base text-muted-foreground mb-0 text-center">
             {event.description}
           </p>
-          <div className="flex items-center gap-1 text-[9px] md:text-xs text-muted-foreground mb-0.5 justify-center">
-            <CalendarDays className="h-2.5 w-2.5 mr-1 text-primary" />
+          <div className="flex items-center gap-1 text-[10px] md:text-sm text-muted-foreground mb-1 justify-center">
+            <CalendarDays className="h-3 w-3 mr-1 text-primary" />
             <span className="font-bold">{formatDate(event.date)} às {event.time}</span>
           </div>
-          <div className="flex items-center gap-1 text-[9px] md:text-xs text-muted-foreground mb-0.5 justify-center">
-            <MapPin className="h-2.5 w-2.5 mr-1 text-primary" />
+          <div className="flex items-center gap-1 text-[10px] md:text-sm text-muted-foreground mb-1 justify-center">
+            <MapPin className="h-3 w-3 mr-1 text-primary" />
             <span className="font-medium">{event.location}</span>
           </div>
-          <div className="flex items-center gap-1 text-[9px] md:text-xs text-muted-foreground justify-center">
-            <Users className="h-2.5 w-2.5 mr-1 text-primary" />
+          <div className="flex items-center gap-1 text-[10px] md:text-sm text-muted-foreground justify-center">
+            <Users className="h-3 w-3 mr-1 text-primary" />
             <span className="font-medium">
               {availableTickets} ingressos
             </span>
           </div>
         </div>
-        <div className="mt-0.5 mb-2 flex flex-col items-center">
-          <span className="text-[13px] md:text-xl font-black text-primary block leading-tight">
+        <div className="mt-1 mb-3 flex flex-col items-center">
+          <span className="text-[14px] md:text-2xl font-black text-primary block leading-tight">
             R$ {event.price.toFixed(2).replace('.', ',')}
           </span>
         </div>
@@ -123,14 +122,14 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
           className="
             w-full 
             bg-primary hover:bg-primary/90 text-white font-bold 
-            py-1 md:py-3 text-[11px] md:text-base mt-auto
+            py-1.5 md:py-4 text-[12px] md:text-lg mt-auto
           "
           onClick={(e) => {
             e.stopPropagation();
             onViewDetails(event);
           }}
         >
-          <Eye className="h-3 w-3 mr-1 md:h-4 md:w-4" />
+          <Eye className="h-4 w-4 mr-1 md:h-5 md:w-5" />
           Ver Detalhes
         </Button>
       </div>
