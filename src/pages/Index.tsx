@@ -195,23 +195,23 @@ const Index = () => {
       />
 
       {/* Seção de Estatísticas */}
-      <section className="bg-foreground py-10 md:py-16">
+      <section className="bg-foreground py-6 md:py-8">
         <div className="container mx-auto px-2 md:px-4">
-          <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-3xl font-black text-background mb-2 md:mb-4">Por que escolher a ITM Tikets?</h2>
+          <div className="text-center mb-4 md:mb-6">
+            <h2 className="text-lg md:text-xl font-black text-background mb-1 md:mb-2">Por que escolher a ITM Tikets?</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 text-center">
             <div>
-              <h3 className="text-2xl md:text-3xl font-black text-primary mb-1 md:mb-2">500+</h3>
-              <p className="text-background font-bold text-sm md:text-base">Eventos Realizados</p>
+              <h3 className="text-lg md:text-2xl font-black text-primary mb-1">500+</h3>
+              <p className="text-background font-semibold text-xs md:text-sm">Eventos Realizados</p>
             </div>
             <div>
-              <h3 className="text-2xl md:text-3xl font-black text-primary mb-1 md:mb-2">50K+</h3>
-              <p className="text-background font-bold text-sm md:text-base">Ingressos Vendidos</p>
+              <h3 className="text-lg md:text-2xl font-black text-primary mb-1">50K+</h3>
+              <p className="text-background font-semibold text-xs md:text-sm">Ingressos Vendidos</p>
             </div>
             <div>
-              <h3 className="text-2xl md:text-3xl font-black text-primary mb-1 md:mb-2">1M+</h3>
-              <p className="text-background font-bold text-sm md:text-base">Usuários Satisfeitos</p>
+              <h3 className="text-lg md:text-2xl font-black text-primary mb-1">1M+</h3>
+              <p className="text-background font-semibold text-xs md:text-sm">Usuários Satisfeitos</p>
             </div>
           </div>
         </div>
