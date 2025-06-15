@@ -1,9 +1,9 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 type WithdrawModalProps = {
   open: boolean;
@@ -47,11 +47,18 @@ export default function WithdrawModal(props: WithdrawModalProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
+    <Dialog open={props.open} onOpenChange={v => { if (!v) props.onClose(); }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Dados para Depósito</DialogTitle>
         </DialogHeader>
+        {/* ALERTA DE HORÁRIO DE SAQUE */}
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>Aviso</AlertTitle>
+          <AlertDescription>
+            Os saques só podem ser solicitados das 8h às 22h.
+          </AlertDescription>
+        </Alert>
         <div className="space-y-4">
           <Label>Forma de Depósito</Label>
           <div className="flex gap-4">
