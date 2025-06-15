@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,11 +32,11 @@ const MyTickets = () => {
   const [tickets, setTickets] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // State for modal
+  // State for QR Modal
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<OrderItem | null>(null);
 
-  // Estado para dialog de alerta de exclusão
+  // State for delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState<OrderItem | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -44,6 +45,7 @@ const MyTickets = () => {
     if (user) {
       loadTickets();
     }
+    // eslint-disable-next-line
   }, [user]);
 
   const loadTickets = async () => {
@@ -76,7 +78,7 @@ const MyTickets = () => {
     setSelectedTicket(null);
   };
 
-  // Controle Dialog de exclusão
+  // Delete dialog logic
   const handleDeleteClick = (ticket: OrderItem) => {
     setTicketToDelete(ticket);
     setDeleteDialogOpen(true);
@@ -106,13 +108,16 @@ const MyTickets = () => {
         title: "Ingresso excluído",
         description: "Seu ingresso foi removido com sucesso.",
       });
-      // Atualiza a lista removendo o ticket excluído
       setTickets((prev) => prev.filter(t => t.id !== ticketToDelete.id));
     }
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">Carregando...</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        Carregando...
+      </div>
+    );
   }
 
   return (
@@ -125,7 +130,6 @@ const MyTickets = () => {
           </Button>
           <h1 className="text-3xl font-black">Meus Ingressos</h1>
         </div>
-
         {tickets.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
@@ -156,34 +160,30 @@ const MyTickets = () => {
                     <Calendar className="h-4 w-4 mr-2" />
                     <span>{ticket.events?.date} às {ticket.events?.time}</span>
                   </div>
-                  
                   <div className="flex items-center text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4 mr-2" />
                     <span>{ticket.events?.location}</span>
                   </div>
-
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center text-sm">
                       <QrCode className="h-4 w-4 mr-2" />
                       <span className="font-mono text-xs">{ticket.qr_code}</span>
                     </div>
-+                    {/* Botão de excluir */}
-+                    <Button
-+                      variant="ghost"
-+                      size="icon"
-+                      onClick={() => handleDeleteClick(ticket)}
-+                      className="text-destructive hover:bg-red-50"
-+                      title="Excluir ingresso"
-+                      aria-label="Excluir ingresso"
-+                    >
-+                      <Trash2 className="h-5 w-5" />
-+                    </Button>
+                    {/* Botão de excluir */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteClick(ticket)}
+                      className="text-destructive hover:bg-red-50"
+                      title="Excluir ingresso"
+                      aria-label="Excluir ingresso"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
                   </div>
-
                   <div className="text-lg font-bold text-primary">
                     R$ {ticket.price?.toFixed(2).replace('.', ',')}
                   </div>
-
                   <Button
                     variant="secondary"
                     onClick={() => handleShowQRCodes(ticket)}
@@ -198,6 +198,7 @@ const MyTickets = () => {
           </div>
         )}
       </div>
+
       {/* Modal for QR codes */}
       {selectedTicket && (
         <TicketQRCodesModal
@@ -208,29 +209,32 @@ const MyTickets = () => {
           eventTitle={selectedTicket.events?.title || "Evento"}
         />
       )}
-+      {/* Dialog de confirmação de exclusão */}
-+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-+        <AlertDialogContent>
-+          <AlertDialogHeader>
-+            <AlertDialogTitle>
-+              Deseja realmente excluir este ingresso?
-+            </AlertDialogTitle>
-+            <AlertDialogDescription>
-+              Esta ação não pode ser desfeita e o ingresso será removido permanentemente.
-+            </AlertDialogDescription>
-+          </AlertDialogHeader>
-+          <AlertDialogFooter>
-+            <AlertDialogCancel disabled={deleting} onClick={handleCancelDelete}>Cancelar</AlertDialogCancel>
-+            <AlertDialogAction
-+              onClick={handleConfirmDelete}
-+              disabled={deleting}
-+              className="bg-destructive text-destructive-foreground hover:bg-red-600"
-+            >
-+              Excluir
-+            </AlertDialogAction>
-+          </AlertDialogFooter>
-+        </AlertDialogContent>
-+      </AlertDialog>
+
+      {/* Dialog de confirmação de exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Deseja realmente excluir este ingresso?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita e o ingresso será removido permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting} onClick={handleCancelDelete}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-red-600"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
