@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Users, Eye } from 'lucide-react';
@@ -54,10 +55,9 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
       `}
       onClick={() => onViewDetails(event)}
       style={{
-        height: '110vw',         // aumentei de 100vw para 110vw para ficar maior no mobile
-        maxHeight: 420,          // mobile: aumentada de 370 para 420
+        height: '110vw',
+        maxHeight: 420,
         minHeight: 0,
-        // md+ sobrescrito pelo Tailwind via md:max-h-[520px]
       }}
     >
       {/* Imagem quadrada na parte superior */}
@@ -90,19 +90,19 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
         )}
       </div>
       {/* Conteúdo abaixo da imagem */}
-      <div className="flex flex-col justify-between flex-1 px-2.5 py-2 md:px-6 md:py-5">
-        <div className="w-full flex flex-col gap-1 md:gap-3 flex-1">
-          <h3 className="font-black text-foreground line-clamp-2 text-[13px] md:text-xl leading-tight mb-1 text-center">
+      <div className="flex flex-col justify-between flex-1 px-2.5 pt-2 pb-8 md:px-6 md:pt-4 md:pb-11 relative">
+        <div className="w-full flex flex-col gap-0.5 md:gap-1 flex-1">
+          <h3 className="font-black text-foreground line-clamp-2 text-[13px] md:text-xl leading-tight mb-0.5 text-center">
             {event.title}
           </h3>
           <p className="line-clamp-2 text-[10px] md:text-base text-muted-foreground mb-0 text-center">
             {event.description}
           </p>
-          <div className="flex items-center gap-1 text-[10px] md:text-sm text-muted-foreground mb-1 justify-center">
+          <div className="flex items-center gap-1 text-[10px] md:text-sm text-muted-foreground mb-0 justify-center">
             <CalendarDays className="h-3 w-3 mr-1 text-primary" />
             <span className="font-bold">{formatDate(event.date)} às {event.time}</span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] md:text-sm text-muted-foreground mb-1 justify-center">
+          <div className="flex items-center gap-1 text-[10px] md:text-sm text-muted-foreground mb-0 justify-center">
             <MapPin className="h-3 w-3 mr-1 text-primary" />
             <span className="font-medium">{event.location}</span>
           </div>
@@ -112,11 +112,6 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
               {availableTickets} ingressos
             </span>
           </div>
-        </div>
-        <div className="mt-1 mb-3 flex flex-col items-center">
-          <span className="text-[14px] md:text-2xl font-black text-primary block leading-tight">
-            R$ {event.price.toFixed(2).replace('.', ',')}
-          </span>
         </div>
         <Button
           className="
@@ -132,9 +127,21 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
           <Eye className="h-4 w-4 mr-1 md:h-5 md:w-5" />
           Ver Detalhes
         </Button>
+        {/* Valor absoluto no rodapé, sempre visível */}
+        <span
+          className="
+            absolute left-0 right-0 bottom-1 md:bottom-3 
+            text-center text-[15px] md:text-2xl font-black text-primary 
+            leading-tight pointer-events-none select-none
+          "
+          style={{ zIndex: 3 }}
+        >
+          R$ {event.price.toFixed(2).replace('.', ',')}
+        </span>
       </div>
     </div>
   );
 };
 
 export default EventCard;
+
