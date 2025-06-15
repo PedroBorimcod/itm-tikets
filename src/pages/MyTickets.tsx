@@ -170,12 +170,9 @@ const MyTickets = () => {
                     <Calendar className="h-3 w-3 mr-1" />
                     <span>{ticket.events?.date} às {ticket.events?.time}</span>
                   </div>
-                  <div className="flex items-center text-[10px] text-primary/70 mb-1">
-                    <span>
-                      {Array.isArray(ticket.qr_code)
-                        ? `${ticket.qr_code.length} QR code${ticket.qr_code.length > 1 ? 's' : ''}`
-                        : "0 QR codes"}
-                    </span>
+                  <div className="flex items-center text-[10px] text-muted-foreground">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    <span className="truncate">{ticket.events?.location}</span>
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <div className="flex items-center text-[10px]">
