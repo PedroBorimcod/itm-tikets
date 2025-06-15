@@ -197,14 +197,14 @@ const Index = () => {
       {/* Seção de Estatísticas */}
       <section className="bg-foreground py-6 md:py-8">
         <div className="container mx-auto px-2 md:px-4">
-          <div className="mb-4 md:mb-6 md:text-center text-left">
+          <div className="mb-4 md:mb-6 md:text-center text-center">
             <h2 className="text-lg md:text-xl font-black text-background mb-1 md:mb-2">
               Por que escolher a ITM Tikets?
             </h2>
           </div>
-          {/* Altere o grid para 3 colunas em todos tamanhos de tela */}
-          <div className="grid grid-cols-3 gap-4 md:gap-6">
-            <div className="flex flex-col md:items-center md:text-center text-left">
+          {/* Grid centralizado em todas as telas */}
+          <div className="grid grid-cols-3 gap-4 md:gap-6 justify-items-center">
+            <div className="flex flex-col items-center text-center">
               <h3 className="text-lg md:text-2xl font-black text-primary mb-1">
                 500+
               </h3>
@@ -212,7 +212,7 @@ const Index = () => {
                 Eventos Realizados
               </p>
             </div>
-            <div className="flex flex-col md:items-center md:text-center text-left">
+            <div className="flex flex-col items-center text-center">
               <h3 className="text-lg md:text-2xl font-black text-primary mb-1">
                 50K+
               </h3>
@@ -220,7 +220,7 @@ const Index = () => {
                 Ingressos Vendidos
               </p>
             </div>
-            <div className="flex flex-col md:items-center md:text-center text-left">
+            <div className="flex flex-col items-center text-center">
               <h3 className="text-lg md:text-2xl font-black text-primary mb-1">
                 1M+
               </h3>
