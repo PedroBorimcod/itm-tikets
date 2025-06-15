@@ -18,7 +18,12 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <Ticket className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">ITM TIKETS</span>
+            <span
+              className="font-bold text-xl whitespace-nowrap overflow-x-auto truncate"
+              style={{ maxWidth: '130px' }}
+            >
+              ITM TIKETS
+            </span>
           </Link>
 
           <div className="flex items-center space-x-4">
@@ -35,7 +40,12 @@ const Navbar = () => {
             )}
 
             {user?.email === 'pepedr13@gmail.com' && (
-              <Button variant="ghost" onClick={() => navigate('/admin/events')}>
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/admin/events')}
+                // Deixa o botão Administração menor em telas pequenas
+                className="h-7 px-2 text-xs min-w-0 sm:h-10 sm:px-4 sm:text-sm"
+              >
                 Administração
               </Button>
             )}
