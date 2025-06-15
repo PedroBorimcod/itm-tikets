@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Tables } from '@/integrations/supabase/types';
+import { ImageDropzone } from "@/components/ImageDropzone";
 
 type Event = Tables<'events'>;
 type Producer = Tables<'producers'>;
@@ -354,14 +354,16 @@ const AdminEvents = () => {
                   </Select>
                 </div>
 
+                {/* Image Dropzone */}
                 <div className="space-y-2">
-                  <Label htmlFor="image">URL da Imagem</Label>
-                  <Input
-                    id="image"
-                    type="url"
-                    value={formData.image}
-                    onChange={(e) => setFormData({...formData, image: e.target.value})}
-                    className="w-full"
+                  <Label htmlFor="image" className="block">
+                    Foto do Evento
+                  </Label>
+                  <ImageDropzone
+                    currentUrl={formData.image}
+                    onImageUrl={(url) =>
+                      setFormData((f) => ({ ...f, image: url }))
+                    }
                   />
                 </div>
 
