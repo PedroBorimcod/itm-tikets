@@ -3,12 +3,24 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { QrCode, Calendar, MapPin, ArrowLeft } from 'lucide-react';
+-import { QrCode, Calendar, MapPin, ArrowLeft } from 'lucide-react';
++import { QrCode, Calendar, MapPin, ArrowLeft, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { useNavigate } from 'react-router-dom';
 import TicketQRCodesModal from '@/components/TicketQRCodesModal';
++import {
++  AlertDialog,
++  AlertDialogContent,
++  AlertDialogHeader,
++  AlertDialogTitle,
++  AlertDialogFooter,
++  AlertDialogCancel,
++  AlertDialogAction,
++  AlertDialogDescription
++} from '@/components/ui/alert-dialog';
++import { toast } from '@/hooks/use-toast';
 
 type OrderItem = Tables<'order_items'> & {
   events: Tables<'events'>;
@@ -24,6 +36,11 @@ const MyTickets = () => {
   // State for modal
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<OrderItem | null>(null);
+
++  // Estado para dialog de alerta de exclusão
++  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
++  const [ticketToDelete, setTicketToDelete] = useState<OrderItem | null>(null);
++  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -60,6 +77,43 @@ const MyTickets = () => {
     setModalOpen(false);
     setSelectedTicket(null);
   };
+
++  // Controle Dialog de exclusão
++  const handleDeleteClick = (ticket: OrderItem) => {
++    setTicketToDelete(ticket);
++    setDeleteDialogOpen(true);
++  };
++  const handleCancelDelete = () => {
++    setDeleteDialogOpen(false);
++    setTicketToDelete(null);
++  };
++
++  // Exclusão do ingresso
++  const handleConfirmDelete = async () => {
++    if (!ticketToDelete) return;
++    setDeleting(true);
++    const { error } = await supabase
++      .from('order_items')
++      .delete()
++      .eq('id', ticketToDelete.id);
++    setDeleting(false);
++    setDeleteDialogOpen(false);
++    setTicketToDelete(null);
++    if (error) {
++      toast({
++        title: "Erro ao excluir ingresso",
++        description: error.message,
++        variant: "destructive",
++      });
++    } else {
++      toast({
++        title: "Ingresso excluído",
++        description: "Seu ingresso foi removido com sucesso.",
++      });
++      // Atualiza a lista removendo o ticket excluído
++      setTickets((prev) => prev.filter(t => t.id !== ticketToDelete.id));
++    }
++  };
 
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">Carregando...</div>;
@@ -112,11 +166,22 @@ const MyTickets = () => {
                     <span>{ticket.events?.location}</span>
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center text-sm">
                       <QrCode className="h-4 w-4 mr-2" />
                       <span className="font-mono text-xs">{ticket.qr_code}</span>
                     </div>
++                    {/* Botão de excluir */}
++                    <Button
++                      variant="ghost"
++                      size="icon"
++                      onClick={() => handleDeleteClick(ticket)}
++                      className="text-destructive hover:bg-red-50"
++                      title="Excluir ingresso"
++                      aria-label="Excluir ingresso"
++                    >
++                      <Trash2 className="h-5 w-5" />
++                    </Button>
                   </div>
 
                   <div className="text-lg font-bold text-primary">
@@ -147,8 +212,32 @@ const MyTickets = () => {
           eventTitle={selectedTicket.events?.title || "Evento"}
         />
       )}
++      {/* Dialog de confirmação de exclusão */}
++      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
++        <AlertDialogContent>
++          <AlertDialogHeader>
++            <AlertDialogTitle>
++              Deseja realmente excluir este ingresso?
++            </AlertDialogTitle>
++            <AlertDialogDescription>
++              Esta ação não pode ser desfeita e o ingresso será removido permanentemente.
++            </AlertDialogDescription>
++          </AlertDialogHeader>
++          <AlertDialogFooter>
++            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
++            <AlertDialogAction
++              onClick={handleConfirmDelete}
++              disabled={deleting}
++              className="bg-destructive text-destructive-foreground hover:bg-red-600"
++            >
++              Excluir
++            </AlertDialogAction>
++          </AlertDialogFooter>
++        </AlertDialogContent>
++      </AlertDialog>
     </div>
   );
 };
 
 export default MyTickets;
+
