@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -418,6 +418,13 @@ const AdminEvents = () => {
             onClick={() => navigate('/admin/producers')}
           >
             Gerenciar produtoras
+          </Button>
+          <Button
+            variant="outline"
+            className="ml-2"
+            onClick={() => navigate('/admin/withdrawals')}
+          >
+            Painel de Saques
           </Button>
         </div>
 
