@@ -19,6 +19,7 @@ export function useTicketPurchase() {
   const [loading, setLoading] = useState(false);
   const [showPixModal, setShowPixModal] = useState(false);
   const [pixData, setPixData] = useState<any>(null);
+  const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -65,11 +66,12 @@ export function useTicketPurchase() {
         orderId: order.id
       });
       
+      setCurrentOrderId(order.id);
       setShowPixModal(true);
       
       toast({
         title: "Pedido criado com sucesso!",
-        description: "Complete o pagamento via PIX para confirmar sua compra.",
+        description: "Complete o pagamento via PIX em até 2 minutos.",
       });
     } catch (error) {
       console.error('Purchase error:', error);
@@ -95,6 +97,33 @@ export function useTicketPurchase() {
   const closePixModal = () => {
     setShowPixModal(false);
     setPixData(null);
+    setCurrentOrderId(null);
+  };
+
+  const cancelOrder = async () => {
+    if (!currentOrderId) return;
+
+    try {
+      // Cancelar o pedido no banco de dados
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', currentOrderId);
+
+      if (error) {
+        console.error('Error cancelling order:', error);
+      }
+
+      toast({
+        title: "Pedido cancelado",
+        description: "O tempo para pagamento expirou.",
+        variant: "destructive"
+      });
+
+      closePixModal();
+    } catch (error) {
+      console.error('Error in cancelOrder:', error);
+    }
   };
 
   return { 
@@ -102,7 +131,8 @@ export function useTicketPurchase() {
     loading, 
     showPixModal, 
     pixData, 
-    closePixModal 
+    closePixModal,
+    cancelOrder
   };
 }
 

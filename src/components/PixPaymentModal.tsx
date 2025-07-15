@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -6,20 +6,52 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Copy, QrCode, X, Clock } from 'lucide-react';
+import { Copy, QrCode, X, Clock, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface PixPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCancel: () => void;
   totalAmount: number;
   eventTitle: string;
   quantity: number;
 }
 
-const PixPaymentModal = ({ isOpen, onClose, totalAmount, eventTitle, quantity }: PixPaymentModalProps) => {
+const PixPaymentModal = ({ isOpen, onClose, onCancel, totalAmount, eventTitle, quantity }: PixPaymentModalProps) => {
   const { toast } = useToast();
   const [pixGenerated, setPixGenerated] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(120); // 2 minutos em segundos
+
+  // Timer effect
+  useEffect(() => {
+    if (!pixGenerated || !isOpen) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          toast({
+            title: "Tempo esgotado!",
+            description: "O pedido foi cancelado automaticamente.",
+            variant: "destructive"
+          });
+          onCancel();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [pixGenerated, isOpen, onCancel, toast]);
+
+  // Formatar tempo para mm:ss
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // Simulação de uma chave PIX aleatória
   const generatePixCode = () => {
@@ -38,9 +70,10 @@ const PixPaymentModal = ({ isOpen, onClose, totalAmount, eventTitle, quantity }:
 
   const handleGeneratePix = () => {
     setPixGenerated(true);
+    setTimeLeft(120); // Reset timer
     toast({
       title: "PIX gerado com sucesso!",
-      description: "Use o código ou QR Code para realizar o pagamento",
+      description: "Você tem 2 minutos para realizar o pagamento",
     });
   };
 
@@ -66,6 +99,16 @@ const PixPaymentModal = ({ isOpen, onClose, totalAmount, eventTitle, quantity }:
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold">Pagamento PIX</DialogTitle>
+            {pixGenerated && (
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold ${
+                timeLeft > 60 ? 'bg-green-100 text-green-700' : 
+                timeLeft > 30 ? 'bg-yellow-100 text-yellow-700' : 
+                'bg-red-100 text-red-700'
+              }`}>
+                <Clock className="h-4 w-4" />
+                {formatTime(timeLeft)}
+              </div>
+            )}
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>
@@ -137,20 +180,45 @@ const PixPaymentModal = ({ isOpen, onClose, totalAmount, eventTitle, quantity }:
                 </div>
               </div>
 
-              {/* Instruções */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              {/* Instruções com timer */}
+              <div className={`border rounded-lg p-3 ${
+                timeLeft > 60 ? 'bg-blue-50 border-blue-200' : 
+                timeLeft > 30 ? 'bg-yellow-50 border-yellow-200' : 
+                'bg-red-50 border-red-200'
+              }`}>
                 <div className="flex items-start gap-2">
-                  <Clock className="h-4 w-4 text-blue-600 mt-0.5" />
+                  {timeLeft <= 30 ? (
+                    <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                  ) : (
+                    <Clock className="h-4 w-4 text-blue-600 mt-0.5" />
+                  )}
                   <div className="space-y-1">
-                    <h4 className="font-semibold text-sm text-blue-900">Como pagar:</h4>
-                    <ul className="text-xs text-blue-800 space-y-1">
+                    <h4 className={`font-semibold text-sm ${
+                      timeLeft > 60 ? 'text-blue-900' : 
+                      timeLeft > 30 ? 'text-yellow-900' : 
+                      'text-red-900'
+                    }`}>
+                      {timeLeft <= 30 ? 'Tempo quase esgotando!' : 'Como pagar:'}
+                    </h4>
+                    <ul className={`text-xs space-y-1 ${
+                      timeLeft > 60 ? 'text-blue-800' : 
+                      timeLeft > 30 ? 'text-yellow-800' : 
+                      'text-red-800'
+                    }`}>
                       <li>1. Abra seu app de pagamentos (banco ou carteira digital)</li>
                       <li>2. Escolha PIX e "Copia e Cola"</li>
                       <li>3. Cole o código ou escaneie o QR Code</li>
                       <li>4. Confirme o pagamento</li>
                     </ul>
-                    <p className="text-xs text-blue-600 font-medium mt-2">
-                      Você tem 15 minutos para finalizar o pagamento.
+                    <p className={`text-xs font-medium mt-2 ${
+                      timeLeft > 60 ? 'text-blue-600' : 
+                      timeLeft > 30 ? 'text-yellow-600' : 
+                      'text-red-600'
+                    }`}>
+                      {timeLeft <= 30 ? 
+                        `ATENÇÃO: Restam apenas ${formatTime(timeLeft)} para finalizar o pagamento!` :
+                        `Tempo restante: ${formatTime(timeLeft)}`
+                      }
                     </p>
                   </div>
                 </div>

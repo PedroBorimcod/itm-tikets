@@ -27,7 +27,7 @@ interface TicketPurchaseModalProps {
 
 const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProps) => {
   const { user } = useAuth();
-  const { purchaseTickets, loading, showPixModal, pixData, closePixModal } = useTicketPurchase();
+  const { purchaseTickets, loading, showPixModal, pixData, closePixModal, cancelOrder } = useTicketPurchase();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
@@ -337,6 +337,7 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
       <PixPaymentModal
         isOpen={showPixModal}
         onClose={closePixModal}
+        onCancel={cancelOrder}
         totalAmount={pixData.totalAmount}
         eventTitle={pixData.eventTitle}
         quantity={pixData.quantity}
