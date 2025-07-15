@@ -17,6 +17,8 @@ interface PurchaseTicketData {
 
 export function useTicketPurchase() {
   const [loading, setLoading] = useState(false);
+  const [showPixModal, setShowPixModal] = useState(false);
+  const [pixData, setPixData] = useState<any>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -25,33 +27,54 @@ export function useTicketPurchase() {
 
     setLoading(true);
     try {
-      // Ajustar para o formato esperado pelo edge function: { cartItems: [...] }
-      const cartItems = [
-        {
-          event_id: purchaseData.eventId,
-          title: purchaseData.eventTitle,
-          price: purchaseData.price,
-          quantity: purchaseData.quantity,
-        },
-      ];
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { cartItems },
-      });
+      // Criar pedido PIX local
+      const totalAmount = (purchaseData.price * purchaseData.quantity) * 1.08; // 8% taxa de serviço
+      
+      // Gerar código PIX simulado
+      const pixCode = generatePixCode();
+      
+      // Salvar pedido no banco
+      const { data: order, error } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          total_amount: totalAmount,
+          status: 'pending'
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      if (data?.url) {
-        // Redireciona na mesma aba (ou troque para window.open se quiser nova aba)
-        window.location.href = data.url;
-        toast({
-          title: "Redirecionando para pagamento",
-          description: "Você será levado ao Stripe.",
+      // Salvar itens do pedido
+      await supabase
+        .from('order_items')
+        .insert({
+          order_id: order.id,
+          event_id: purchaseData.eventId,
+          ticket_type_id: purchaseData.ticketTypeId,
+          quantity: purchaseData.quantity,
+          price: purchaseData.price
         });
-      }
+
+      setPixData({
+        totalAmount,
+        eventTitle: purchaseData.eventTitle,
+        quantity: purchaseData.quantity,
+        pixCode,
+        orderId: order.id
+      });
+      
+      setShowPixModal(true);
+      
+      toast({
+        title: "Pedido criado com sucesso!",
+        description: "Complete o pagamento via PIX para confirmar sua compra.",
+      });
     } catch (error) {
       console.error('Purchase error:', error);
       toast({
-        title: "Erro no pagamento",
+        title: "Erro ao criar pedido",
         description: "Tente novamente.",
         variant: "destructive"
       });
@@ -60,6 +83,26 @@ export function useTicketPurchase() {
     }
   };
 
-  return { purchaseTickets, loading };
+  const generatePixCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 32; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
+  const closePixModal = () => {
+    setShowPixModal(false);
+    setPixData(null);
+  };
+
+  return { 
+    purchaseTickets, 
+    loading, 
+    showPixModal, 
+    pixData, 
+    closePixModal 
+  };
 }
 

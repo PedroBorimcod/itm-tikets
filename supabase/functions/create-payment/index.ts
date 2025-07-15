@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const SERVICE_FEE_PERCENT = 0.08;
@@ -40,59 +39,35 @@ serve(async (req) => {
       throw new Error("Carrinho vazio");
     }
 
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2023-10-16",
-    });
+    // Gerar código PIX aleatório
+    const generatePixCode = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let result = '';
+      for (let i = 0; i < 32; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    };
 
-    // Check if a Stripe customer record exists for this user
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-    }
-
-    // Calcule valores com taxa
+    // Calcular valores com taxa
     let totalAmount = 0;
     let totalServiceFee = 0;
 
-    // Cada ingresso: aplica 8% taxa por ingresso
-    const lineItems = cartItems.map((item: any) => {
-      const priceWithFee = Number(item.price) * (1 + SERVICE_FEE_PERCENT);
-      const unit_amount = Math.round(priceWithFee * 100); // em centavos
-      const serviceFee = Number(item.price) * SERVICE_FEE_PERCENT * item.quantity;
-      totalAmount += unit_amount * item.quantity / 100; // soma full (com taxa)
+    cartItems.forEach((item: any) => {
+      const itemTotal = Number(item.price) * item.quantity;
+      const serviceFee = itemTotal * SERVICE_FEE_PERCENT;
+      totalAmount += itemTotal + serviceFee;
       totalServiceFee += serviceFee;
-
-      return {
-        price_data: {
-          currency: "brl",
-          product_data: {
-            name: item.title,
-            description: `Ingresso para ${item.title} (com taxa de serviço)`,
-          },
-          unit_amount, // já inclui taxa
-        },
-        quantity: item.quantity,
-      };
     });
 
-    // Crie a sessão de pagamento
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      line_items: lineItems,
-      mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/cart`,
-      metadata: {
-        user_id: user.id,
-        total_amount: totalAmount.toFixed(2),
-        service_fee: totalServiceFee.toFixed(2),
-      },
-    });
+    const pixCode = generatePixCode();
+    const pixData = {
+      code: pixCode,
+      amount: totalAmount,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 minutos
+    };
 
-    // Crie o pedido no Supabase
+    // Criar o pedido no Supabase
     const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -103,11 +78,8 @@ serve(async (req) => {
       .from("orders")
       .insert({
         user_id: user.id,
-        stripe_session_id: session.id,
         total_amount: totalAmount,
-        status: "pending",
-        // O valor cobrado já inclui a taxa de serviço
-        // (se quiser registrar a taxa separada, pode-se adicionar uma coluna "service_fee")
+        status: "awaiting_payment",
       })
       .select()
       .single();
@@ -117,7 +89,7 @@ serve(async (req) => {
       throw new Error("Erro ao criar pedido");
     }
 
-    // Crie os itens do pedido
+    // Criar os itens do pedido
     const orderItems = cartItems.map((item: any) => ({
       order_id: order.id,
       event_id: item.event_id,
@@ -134,11 +106,16 @@ serve(async (req) => {
       throw new Error("Erro ao criar itens do pedido");
     }
 
-    console.log("Payment session created:", session.id);
+    console.log("PIX payment created:", pixCode);
     console.log("Order created:", order.id);
     console.log("Total service fee calculated (8%):", totalServiceFee);
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    return new Response(JSON.stringify({ 
+      pixData,
+      orderId: order.id,
+      totalAmount,
+      serviceFee: totalServiceFee
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

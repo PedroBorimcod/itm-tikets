@@ -7,13 +7,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, MapPin, Clock, Users, ShoppingCart, X, Plus, Minus } from 'lucide-react';
+import { CalendarDays, MapPin, Clock, Users, QrCode, X, Plus, Minus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTicketPurchase } from '@/hooks/useTicketPurchase';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
+import PixPaymentModal from './PixPaymentModal';
 
 type Event = Tables<'events'>;
 type TicketType = Tables<'ticket_types'>;
@@ -26,7 +27,7 @@ interface TicketPurchaseModalProps {
 
 const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProps) => {
   const { user } = useAuth();
-  const { purchaseTickets, loading } = useTicketPurchase();
+  const { purchaseTickets, loading, showPixModal, pixData, closePixModal } = useTicketPurchase();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
@@ -132,7 +133,8 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
   const total = subtotal + serviceFee;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
         <div className="relative">
           {/* Banner do evento */}
@@ -315,8 +317,8 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
                   disabled={loading}
                   onClick={handlePurchase}
                 >
-                  <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-                  {loading ? 'Processando...' : `Comprar ${quantity} Ingresso(s)`}
+                  <QrCode className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                  {loading ? 'Processando...' : `Pagar via PIX - ${quantity} Ingresso(s)`}
                 </Button>
                 
                 {!user && (
@@ -330,6 +332,17 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
         </div>
       </DialogContent>
     </Dialog>
+
+    {pixData && (
+      <PixPaymentModal
+        isOpen={showPixModal}
+        onClose={closePixModal}
+        totalAmount={pixData.totalAmount}
+        eventTitle={pixData.eventTitle}
+        quantity={pixData.quantity}
+      />
+    )}
+    </>
   );
 };
 
