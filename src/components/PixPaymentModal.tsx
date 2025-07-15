@@ -6,8 +6,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Copy, QrCode, X, Clock, AlertTriangle } from 'lucide-react';
+import { Copy, QrCode, X, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { usePaymentSimulation } from '@/hooks/usePaymentSimulation';
 
 interface PixPaymentModalProps {
   isOpen: boolean;
@@ -16,12 +17,14 @@ interface PixPaymentModalProps {
   totalAmount: number;
   eventTitle: string;
   quantity: number;
+  orderId: string | null;
 }
 
-const PixPaymentModal = ({ isOpen, onClose, onCancel, totalAmount, eventTitle, quantity }: PixPaymentModalProps) => {
+const PixPaymentModal = ({ isOpen, onClose, onCancel, totalAmount, eventTitle, quantity, orderId }: PixPaymentModalProps) => {
   const { toast } = useToast();
   const [pixGenerated, setPixGenerated] = useState(false);
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutos em segundos
+  const { simulatePayment, isSimulating } = usePaymentSimulation(orderId);
 
   // Timer effect
   useEffect(() => {
@@ -224,13 +227,28 @@ const PixPaymentModal = ({ isOpen, onClose, onCancel, totalAmount, eventTitle, q
                 </div>
               </div>
 
-              <Button 
-                variant="outline" 
-                onClick={onClose}
-                className="w-full"
-              >
-                Fechar
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={onClose}
+                  className="flex-1"
+                >
+                  Fechar
+                </Button>
+                <Button 
+                  onClick={async () => {
+                    const success = await simulatePayment();
+                    if (success) {
+                      onClose();
+                    }
+                  }}
+                  disabled={isSimulating}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  {isSimulating ? 'Processando...' : 'Simular Pagamento'}
+                </Button>
+              </div>
             </div>
           )}
         </div>

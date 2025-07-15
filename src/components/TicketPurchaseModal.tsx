@@ -341,6 +341,7 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
         totalAmount={pixData.totalAmount}
         eventTitle={pixData.eventTitle}
         quantity={pixData.quantity}
+        orderId={pixData.orderId}
       />
     )}
     </>

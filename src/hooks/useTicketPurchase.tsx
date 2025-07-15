@@ -114,9 +114,17 @@ export function useTicketPurchase() {
         console.error('Error cancelling order:', error);
       }
 
+      // Enviar email de cancelamento
+      await supabase.functions.invoke('send-ticket-email', {
+        body: {
+          orderId: currentOrderId,
+          type: 'cancelled'
+        }
+      });
+
       toast({
         title: "Pedido cancelado",
-        description: "O tempo para pagamento expirou.",
+        description: "O tempo para pagamento expirou. Email de cancelamento enviado.",
         variant: "destructive"
       });
 
