@@ -36,15 +36,10 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Buscar dados do pedido
+    // Buscar dados do pedido e perfil separadamente
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select(`
-        *,
-        profiles!orders_user_id_fkey (
-          full_name
-        )
-      `)
+      .select('*')
       .eq('id', orderId)
       .single();
 
@@ -55,6 +50,14 @@ const handler = async (req: Request): Promise<Response> => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
+
+    // Buscar perfil do usuário
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', order.user_id)
+      .single();
+
 
     // Buscar itens do pedido
     const { data: orderItems, error: itemsError } = await supabase
@@ -116,7 +119,7 @@ const handler = async (req: Request): Promise<Response> => {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #22c55e;">🎉 Pagamento Confirmado!</h1>
-            <p>Olá ${order.profiles?.full_name || 'Cliente'},</p>
+            <p>Olá ${profile?.full_name || 'Cliente'},</p>
             
             <p>Seu pagamento foi processado com sucesso! Aqui estão seus ingressos:</p>
             
@@ -150,7 +153,7 @@ const handler = async (req: Request): Promise<Response> => {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #ef4444;">⏰ Tempo Esgotado</h1>
-            <p>Olá ${order.profiles?.full_name || 'Cliente'},</p>
+            <p>Olá ${profile?.full_name || 'Cliente'},</p>
             
             <p>Infelizmente seu pedido foi cancelado automaticamente porque o pagamento não foi efetuado dentro do prazo de 2 minutos.</p>
             
