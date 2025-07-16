@@ -19,6 +19,7 @@ import ProducerDashboard from "./pages/ProducerDashboard";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 import AdminWithdrawals from "./pages/AdminWithdrawals";
+import QRScanner from "./pages/QRScanner";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
                   <Route path="/producer-dashboard" element={<ProducerDashboard />} />
                   <Route path="/payment-success" element={<PaymentSuccess />} />
                   <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
+                  <Route path="/qr-scanner" element={<QRScanner />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

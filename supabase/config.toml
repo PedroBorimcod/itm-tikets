@@ -1,1 +1,7 @@
 project_id = "ngbpmludrnwmkwzsdasp"
+
+[functions.send-ticket-email]
+verify_jwt = false
+
+[functions.validate-qr-code]
+verify_jwt = false

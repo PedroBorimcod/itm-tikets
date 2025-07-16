@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, TrendingUp, Calendar, CreditCard, ArrowLeft } from 'lucide-react';
+import { DollarSign, TrendingUp, Calendar, CreditCard, ArrowLeft, QrCode } from 'lucide-react';
 import { useProducerAuth } from '@/hooks/useProducerAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -183,9 +183,15 @@ const ProducerDashboard = () => {
             </Button>
             <h1 className="text-3xl font-black">Dashboard da Produtora</h1>
           </div>
-          <Button variant="outline" onClick={signOut}>
-            Sair
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/qr-scanner')}>
+              <QrCode className="h-4 w-4 mr-2" />
+              Scanner QR
+            </Button>
+            <Button variant="outline" onClick={signOut}>
+              Sair
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

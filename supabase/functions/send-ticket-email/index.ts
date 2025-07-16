@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { Resend } from "npm:resend@2.0.0";
+import QRCode from "npm:qrcode@1.5.4";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -91,8 +92,27 @@ const handler = async (req: Request): Promise<Response> => {
     if (type === 'success') {
       // Gerar QR codes únicos para cada ingresso
       const qrCodes: string[] = [];
+      const qrImages: string[] = [];
+      
       for (let i = 0; i < orderItems[0].quantity; i++) {
-        qrCodes.push(generateQRCode());
+        const code = generateQRCode();
+        qrCodes.push(code);
+        
+        // Gerar imagem do QR code em base64
+        try {
+          const qrImage = await QRCode.toDataURL(code, {
+            width: 200,
+            margin: 2,
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            }
+          });
+          qrImages.push(qrImage);
+        } catch (error) {
+          console.error('Error generating QR code image:', error);
+          qrImages.push('');
+        }
       }
 
       // Salvar QR codes no banco
@@ -104,11 +124,18 @@ const handler = async (req: Request): Promise<Response> => {
       const event = orderItems[0].events;
       const ticketType = orderItems[0].ticket_types;
 
-      // Email de sucesso com QR codes
+      // Email de sucesso com QR codes visuais
       const qrCodesHtml = qrCodes.map((code, index) => 
-        `<div style="margin: 10px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
-          <strong>Ingresso ${index + 1}:</strong><br>
-          <code style="font-size: 16px; font-weight: bold;">${code}</code>
+        `<div style="margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 12px; text-align: center;">
+          <h4 style="margin-top: 0; color: #2563eb;">Ingresso ${index + 1}</h4>
+          ${qrImages[index] ? 
+            `<img src="${qrImages[index]}" alt="QR Code ${code}" style="max-width: 200px; height: auto; margin: 10px 0;" />` : 
+            `<div style="background: #e5e7eb; padding: 40px; border-radius: 8px; margin: 10px 0;">QR Code não disponível</div>`
+          }
+          <div style="margin-top: 10px;">
+            <strong>Código:</strong><br>
+            <code style="font-size: 14px; font-weight: bold; background: #e5e7eb; padding: 4px 8px; border-radius: 4px;">${code}</code>
+          </div>
         </div>`
       ).join('');
 
@@ -133,11 +160,13 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
 
             <h3>Seus QR Codes:</h3>
-            <p><strong>⚠️ IMPORTANTE:</strong> Cada QR Code pode ser usado apenas UMA VEZ. Guarde com cuidado!</p>
+            <p><strong>⚠️ IMPORTANTE:</strong> Cada QR Code pode ser usado apenas UMA VEZ. Escaneie na entrada do evento.</p>
             ${qrCodesHtml}
             
-            <p style="margin-top: 30px;">Apresente estes códigos na entrada do evento.</p>
-            <p style="color: #666; font-size: 12px;">Pedido #${orderId}</p>
+            <p style="margin-top: 30px; font-size: 12px; color: #666;">
+              Apresente estes QR codes na entrada do evento.<br>
+              Pedido #${orderId}
+            </p>
           </div>
         `,
       });
