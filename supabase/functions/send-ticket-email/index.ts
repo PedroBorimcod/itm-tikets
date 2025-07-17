@@ -94,6 +94,8 @@ const handler = async (req: Request): Promise<Response> => {
       const qrCodes: string[] = [];
       const qrImages: string[] = [];
       
+      console.log(`Generating ${orderItems[0].quantity} QR codes for order ${orderId}`);
+      
       for (let i = 0; i < orderItems[0].quantity; i++) {
         const code = generateQRCode();
         qrCodes.push(code);
@@ -109,35 +111,47 @@ const handler = async (req: Request): Promise<Response> => {
             }
           });
           qrImages.push(qrImage);
+          console.log(`Generated QR image for ticket ${i + 1}, code: ${code}`);
         } catch (error) {
-          console.error('Error generating QR code image:', error);
+          console.error(`Error generating QR code image for ticket ${i + 1}:`, error);
           qrImages.push('');
         }
       }
 
       // Salvar QR codes no banco
-      await supabase
+      const { error: updateError } = await supabase
         .from('order_items')
         .update({ qr_code: qrCodes })
         .eq('id', orderItems[0].id);
+
+      if (updateError) {
+        console.error('Error updating QR codes:', updateError);
+      } else {
+        console.log('QR codes saved to database successfully');
+      }
 
       const event = orderItems[0].events;
       const ticketType = orderItems[0].ticket_types;
 
       // Email de sucesso com QR codes visuais
-      const qrCodesHtml = qrCodes.map((code, index) => 
-        `<div style="margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 12px; text-align: center;">
+      const qrCodesHtml = qrCodes.map((code, index) => {
+        const qrImageSrc = qrImages[index];
+        console.log(`QR Image ${index + 1} available: ${!!qrImageSrc}`);
+        
+        return `<div style="margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 12px; text-align: center;">
           <h4 style="margin-top: 0; color: #2563eb;">Ingresso ${index + 1}</h4>
-          ${qrImages[index] ? 
-            `<img src="${qrImages[index]}" alt="QR Code ${code}" style="max-width: 200px; height: auto; margin: 10px 0;" />` : 
+          ${qrImageSrc ? 
+            `<img src="${qrImageSrc}" alt="QR Code ${code}" style="max-width: 200px; height: auto; margin: 10px 0; display: block; margin-left: auto; margin-right: auto;" />` : 
             `<div style="background: #e5e7eb; padding: 40px; border-radius: 8px; margin: 10px 0;">QR Code não disponível</div>`
           }
           <div style="margin-top: 10px;">
             <strong>Código:</strong><br>
             <code style="font-size: 14px; font-weight: bold; background: #e5e7eb; padding: 4px 8px; border-radius: 4px;">${code}</code>
           </div>
-        </div>`
-      ).join('');
+        </div>`;
+      }).join('');
+
+      console.log('Sending email with QR codes');
 
       await resend.emails.send({
         from: "EventTickets <onboarding@resend.dev>",
