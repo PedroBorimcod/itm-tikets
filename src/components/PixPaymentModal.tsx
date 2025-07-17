@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, QrCode, X, Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { usePaymentSimulation } from '@/hooks/usePaymentSimulation';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface PixPaymentModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ const PixPaymentModal = ({ isOpen, onClose, onCancel, totalAmount, eventTitle, q
   const [pixGenerated, setPixGenerated] = useState(false);
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutos em segundos
   const { simulatePayment, isSimulating } = usePaymentSimulation(orderId);
+  const { isAdmin } = useAdminAuth();
 
   // Timer effect
   useEffect(() => {
@@ -235,19 +237,21 @@ const PixPaymentModal = ({ isOpen, onClose, onCancel, totalAmount, eventTitle, q
                 >
                   Fechar
                 </Button>
-                <Button 
-                  onClick={async () => {
-                    const success = await simulatePayment();
-                    if (success) {
-                      onClose();
-                    }
-                  }}
-                  disabled={isSimulating}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {isSimulating ? 'Processando...' : 'Simular Pagamento'}
-                </Button>
+                {isAdmin && (
+                  <Button 
+                    onClick={async () => {
+                      const success = await simulatePayment();
+                      if (success) {
+                        onClose();
+                      }
+                    }}
+                    disabled={isSimulating}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    {isSimulating ? 'Processando...' : 'Simular Pagamento'}
+                  </Button>
+                )}
               </div>
             </div>
           )}
