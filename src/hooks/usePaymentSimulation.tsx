@@ -19,7 +19,7 @@ export function usePaymentSimulation(orderId: string | null) {
       // Atualizar status do pedido para pago
       const { error } = await supabase
         .from('orders')
-        .update({ status: 'paid' })
+        .update({ status: 'completed' })
         .eq('id', orderId);
 
       if (error) throw error;
@@ -34,7 +34,7 @@ export function usePaymentSimulation(orderId: string | null) {
 
       toast({
         title: "Pagamento confirmado! 🎉",
-        description: "Email enviado com seus QR codes únicos.",
+        description: "Email enviado com seus QR codes únicos. Verifique sua caixa de entrada!",
       });
 
       return true;

@@ -37,10 +37,18 @@ const TicketQRCodesModal: React.FC<TicketQRCodesModalProps> = ({
         </DialogHeader>
         <div className="flex flex-col items-center gap-4 py-4">
           {!qrAvailable ? (
-            <div className="text-center text-muted-foreground text-sm max-w-xs">
-              Os QR codes para entrada só ficarão disponíveis após a confirmação do pagamento na Stripe.
-              <br />
-              Assim que o pagamento for processado, seus QR codes aparecerão aqui!
+            <div className="text-center space-y-3">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="text-amber-800 text-sm">
+                  <strong>⚠️ QR Codes não disponíveis</strong>
+                  <br />
+                  Os QR codes para entrada só ficarão disponíveis após a confirmação do pagamento por email.
+                  <br />
+                  <span className="text-amber-700 font-medium">
+                    ✉️ Verifique seu email - quando o pagamento for confirmado, você receberá os QR codes por lá!
+                  </span>
+                </div>
+              </div>
             </div>
           ) : (
             Array.from({ length: quantity }).map((_, i) => (

@@ -77,6 +77,11 @@ export default function QRScanner() {
     if (!videoRef.current) return;
 
     try {
+      // Verificar se o navegador suporta câmera
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Câmera não suportada neste navegador");
+      }
+
       if (qrScannerRef.current) {
         qrScannerRef.current.destroy();
       }
@@ -90,16 +95,22 @@ export default function QRScanner() {
         {
           highlightScanRegion: true,
           highlightCodeOutline: true,
+          preferredCamera: 'environment', // Usar câmera traseira por padrão
         }
       );
 
       await qrScannerRef.current.start();
       setIsScanning(true);
+      
+      toast({
+        title: "Câmera iniciada",
+        description: "Aponte para o QR code do ingresso",
+      });
     } catch (error) {
       console.error('Error starting QR scanner:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao iniciar a câmera. Verifique as permissões.",
+        title: "Erro ao acessar câmera",
+        description: "Verifique se concedeu permissão para usar a câmera. Recarregue a página e tente novamente.",
         variant: "destructive",
       });
     }
