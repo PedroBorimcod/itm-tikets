@@ -1,6 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Users, Eye } from 'lucide-react';
+import { EventInterestButton } from './EventInterestButton';
+import { EventShareButton } from './EventShareButton';
+import { useEventAnalytics } from '@/hooks/useEventAnalytics';
 
 interface Event {
   id: string;
@@ -22,6 +25,14 @@ interface EventCardProps {
 }
 
 const EventCard = ({ event, onViewDetails }: EventCardProps) => {
+  const { trackView } = useEventAnalytics();
+  
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.preventDefault();
+    trackView(event.id);
+    onViewDetails(event);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR', {
@@ -52,7 +63,7 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
         max-h-[420px] h-full min-h-[0] 
         md:max-h-[520px]
       `}
-      onClick={() => onViewDetails(event)}
+      onClick={handleViewDetails}
       style={{
         height: '110vw',
         maxHeight: 420,
@@ -111,6 +122,23 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
               {availableTickets} ingressos
             </span>
           </div>
+        </div>
+        
+        {/* Buttons section */}
+        <div 
+          className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2 z-20"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <EventInterestButton 
+            eventId={event.id} 
+            className="text-xs"
+          />
+          <EventShareButton
+            eventId={event.id}
+            eventTitle={event.title}
+            eventDate={`${formatDate(event.date)} às ${event.time}`}
+            className="text-xs"
+          />
         </div>
       </div>
     </div>

@@ -14,6 +14,127 @@ export type Database = {
   }
   public: {
     Tables: {
+      coupons: {
+        Row: {
+          active: boolean | null
+          code: string
+          created_at: string
+          created_by: string | null
+          current_uses: number | null
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          max_uses: number | null
+          min_purchase_amount: number | null
+          name: string
+          updated_at: string
+          valid_from: string
+          valid_until: string
+        }
+        Insert: {
+          active?: boolean | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number | null
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          max_uses?: number | null
+          min_purchase_amount?: number | null
+          name: string
+          updated_at?: string
+          valid_from?: string
+          valid_until: string
+        }
+        Update: {
+          active?: boolean | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          current_uses?: number | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          max_uses?: number | null
+          min_purchase_amount?: number | null
+          name?: string
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string
+        }
+        Relationships: []
+      }
+      event_analytics: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          metadata: Json | null
+          metric_type: string
+          metric_value: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          metric_value?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          metric_value?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_analytics_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_interests: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_interests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           capacity: number
@@ -220,6 +341,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          event_id: string
+          id: string
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          rating: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ticket_types: {
         Row: {

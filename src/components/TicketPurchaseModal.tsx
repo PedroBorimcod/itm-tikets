@@ -15,6 +15,10 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import PixPaymentModal from './PixPaymentModal';
+import { EventReviews } from './EventReviews';
+import { EventInterestButton } from './EventInterestButton';
+import { EventShareButton } from './EventShareButton';
+import { useEventAnalytics } from '@/hooks/useEventAnalytics';
 
 type Event = Tables<'events'>;
 type TicketType = Tables<'ticket_types'>;
@@ -321,15 +325,30 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
                   {loading ? 'Processando...' : `Pagar via PIX - ${quantity} Ingresso(s)`}
                 </Button>
                 
-                {!user && (
-                  <p className="text-xs md:text-sm text-muted-foreground text-center">
-                    Faça login para comprar ingressos
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+                 {!user && (
+                   <p className="text-xs md:text-sm text-muted-foreground text-center">
+                     Faça login para comprar ingressos
+                   </p>
+                 )}
+               </div>
+             )}
+
+             {/* Interest and Share buttons */}
+             <div className="flex items-center justify-between gap-4 mt-6 p-4 border-t">
+               <EventInterestButton eventId={event.id} />
+               <EventShareButton
+                 eventId={event.id}
+                 eventTitle={event.title}
+                 eventDate={`${formatDate(event.date)} às ${event.time}`}
+               />
+             </div>
+
+             {/* Event Reviews */}
+             <div className="mt-6">
+               <EventReviews eventId={event.id} />
+             </div>
+           </div>
+         </div>
       </DialogContent>
     </Dialog>
 
