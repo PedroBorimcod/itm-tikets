@@ -10,6 +10,7 @@ import { Copy, QrCode, X, Clock, AlertTriangle, CheckCircle } from 'lucide-react
 import { useToast } from '@/hooks/use-toast';
 import { usePaymentSimulation } from '@/hooks/usePaymentSimulation';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PixPaymentModalProps {
   isOpen: boolean;
@@ -27,6 +28,32 @@ const PixPaymentModal = ({ isOpen, onClose, onCancel, totalAmount, eventTitle, q
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutos em segundos
   const { simulatePayment, isSimulating } = usePaymentSimulation(orderId);
   const { isAdmin } = useAdminAuth();
+  const [pixConfig, setPixConfig] = useState<{pix_key: string, pix_qr_image: string}>({pix_key: '', pix_qr_image: ''});
+
+  // Carregar configuração PIX
+  useEffect(() => {
+    const loadPixConfig = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('payment_config')
+          .select('pix_key, pix_qr_image')
+          .single();
+        
+        if (data && !error) {
+          setPixConfig({
+            pix_key: data.pix_key || '',
+            pix_qr_image: data.pix_qr_image || ''
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao carregar configuração PIX:', error);
+      }
+    };
+
+    if (isOpen) {
+      loadPixConfig();
+    }
+  }, [isOpen]);
 
   // Timer effect
   useEffect(() => {
@@ -58,19 +85,10 @@ const PixPaymentModal = ({ isOpen, onClose, onCancel, totalAmount, eventTitle, q
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Simulação de uma chave PIX aleatória
-  const generatePixCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 32; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  };
-
-  const pixCode = pixGenerated ? generatePixCode() : '';
+  // Usar chave PIX real configurada pelo admin
+  const pixCode = pixGenerated ? (pixConfig.pix_key || 'Chave PIX não configurada') : '';
   
-  // QR Code simulado (na vida real seria gerado por uma API de pagamentos PIX)
+  // QR Code usando a chave configurada
   const qrCodeData = `00020126580014BR.GOV.BCB.PIX0136${pixCode}520400005303986540${totalAmount.toFixed(2)}5802BR5925EVENTO TICKETS LTDA6009SAO PAULO62070503***6304`;
 
   const handleGeneratePix = () => {
@@ -156,12 +174,23 @@ const PixPaymentModal = ({ isOpen, onClose, onCancel, totalAmount, eventTitle, q
             </div>
           ) : (
             <div className="space-y-4">
-              {/* QR Code simulado */}
+              {/* QR Code */}
               <div className="text-center">
                 <div className="bg-white p-4 rounded-lg border mx-auto w-fit">
-                  <div className="w-48 h-48 bg-black/10 flex items-center justify-center rounded">
-                    <QrCode className="h-24 w-24 text-black/60" />
-                  </div>
+                  {pixConfig.pix_qr_image ? (
+                    <img 
+                      src={pixConfig.pix_qr_image} 
+                      alt="QR Code PIX" 
+                      className="w-48 h-48 object-contain rounded"
+                    />
+                  ) : (
+                    <div className="w-48 h-48 bg-black/10 flex items-center justify-center rounded flex-col gap-2">
+                      <QrCode className="h-24 w-24 text-black/60" />
+                      <p className="text-xs text-muted-foreground text-center">
+                        QR Code não configurado
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
                   Escaneie o QR Code com seu app de pagamentos

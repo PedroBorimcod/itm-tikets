@@ -69,6 +69,7 @@ const AdminEvents = () => {
     }
     loadEvents();
     loadProducers();
+    loadPixConfig();
   }, [user, navigate]);
 
   const loadEvents = async () => {
@@ -338,6 +339,65 @@ const AdminEvents = () => {
   const [adminName, setAdminName] = useState('');
   const [adminLoading, setAdminLoading] = useState(false);
 
+  // Estados para configuração PIX
+  const [showPixConfigModal, setShowPixConfigModal] = useState(false);
+  const [pixKey, setPixKey] = useState('');
+  const [pixQrImage, setPixQrImage] = useState('');
+  const [pixLoading, setPixLoading] = useState(false);
+
+  // Carregar configuração PIX
+  const loadPixConfig = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('payment_config')
+        .select('*')
+        .single();
+      
+      if (error) {
+        console.log('Erro ao carregar config PIX:', error);
+        return;
+      }
+      
+      setPixKey(data?.pix_key || '');
+      setPixQrImage(data?.pix_qr_image || '');
+    } catch (error) {
+      console.error('Erro ao carregar configuração PIX:', error);
+    }
+  };
+
+  // Salvar configuração PIX
+  const handleSavePixConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPixLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from('payment_config')
+        .update({
+          pix_key: pixKey,
+          pix_qr_image: pixQrImage
+        })
+        .eq('id', (await supabase.from('payment_config').select('id').single()).data?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Configuração PIX salva",
+        description: "Chave PIX e imagem QR Code atualizadas com sucesso."
+      });
+      
+      setShowPixConfigModal(false);
+    } catch (error: any) {
+      toast({
+        title: "Erro ao salvar",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setPixLoading(false);
+    }
+  };
+
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAdminLoading(true);
@@ -425,6 +485,13 @@ const AdminEvents = () => {
             onClick={() => navigate('/admin/withdrawals')}
           >
             Painel de Saques
+          </Button>
+          <Button
+            variant="outline"
+            className="ml-2"
+            onClick={() => setShowPixConfigModal(true)}
+          >
+            Config. PIX
           </Button>
         </div>
 
@@ -533,6 +600,49 @@ const AdminEvents = () => {
                 </Button>
                 <Button type="submit" disabled={editingLoading}>
                   {editingLoading ? "Salvando..." : "Salvar alterações"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de configuração PIX */}
+        <Dialog open={showPixConfigModal} onOpenChange={setShowPixConfigModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Configuração PIX</DialogTitle>
+              <DialogDescription>
+                Configure a chave PIX e imagem QR Code que serão utilizadas nos pagamentos.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSavePixConfig} className="space-y-4 my-2">
+              <div>
+                <Label htmlFor="pix-key">Chave PIX</Label>
+                <Input
+                  id="pix-key"
+                  value={pixKey}
+                  onChange={e => setPixKey(e.target.value)}
+                  placeholder="Digite sua chave PIX (CPF, CNPJ, email, celular ou aleatória)"
+                />
+              </div>
+              
+              <div>
+                <Label>Imagem QR Code PIX</Label>
+                <ImageDropzone
+                  currentUrl={pixQrImage}
+                  onImageUrl={(url) => setPixQrImage(url)}
+                />
+                <p className="text-sm text-muted-foreground mt-2">
+                  Faça upload da imagem do QR Code PIX que será exibida no pagamento.
+                </p>
+              </div>
+
+              <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setShowPixConfigModal(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={pixLoading}>
+                  {pixLoading ? "Salvando..." : "Salvar configuração"}
                 </Button>
               </DialogFooter>
             </form>

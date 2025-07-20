@@ -285,6 +285,30 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_config: {
+        Row: {
+          created_at: string
+          id: string
+          pix_key: string | null
+          pix_qr_image: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pix_key?: string | null
+          pix_qr_image?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pix_key?: string | null
+          pix_qr_image?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       producers: {
         Row: {
           balance: number | null
