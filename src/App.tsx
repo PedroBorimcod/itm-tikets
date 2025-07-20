@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import AdminEvents from "./pages/AdminEvents";
 import AdminProducers from "./pages/AdminProducers";
+import AdminPixPayments from "./pages/AdminPixPayments";
 import ProducerAuth from "./pages/ProducerAuth";
 import ProducerDashboard from "./pages/ProducerDashboard";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -41,6 +42,7 @@ const App = () => (
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/admin/events" element={<AdminEvents />} />
                   <Route path="/admin/producers" element={<AdminProducers />} />
+                  <Route path="/admin/pix-payments" element={<AdminPixPayments />} />
                   <Route path="/producer-auth" element={<ProducerAuth />} />
                   <Route path="/producer-dashboard" element={<ProducerDashboard />} />
                   <Route path="/payment-success" element={<PaymentSuccess />} />

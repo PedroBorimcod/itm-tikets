@@ -58,7 +58,8 @@ const MyTickets = () => {
         events (*),
         orders (*)
       `)
-      .eq('orders.user_id', user.id);
+      .eq('orders.user_id', user.id)
+      .eq('orders.status', 'completed'); // Só mostrar ingressos com pagamento confirmado
 
     if (error) {
       console.error('Error loading tickets:', error);

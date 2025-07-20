@@ -493,6 +493,13 @@ const AdminEvents = () => {
           >
             Config. PIX
           </Button>
+          <Button
+            variant="outline"
+            className="ml-2"
+            onClick={() => navigate('/admin/pix-payments')}
+          >
+            Confirmar PIX
+          </Button>
         </div>
 
         {/* Modal para cadastro de novo admin */}
