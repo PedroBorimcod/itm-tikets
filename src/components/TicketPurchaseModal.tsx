@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Clock, Users, QrCode, X, Plus, Minus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTicketPurchase } from '@/hooks/useTicketPurchase';
+import { useHublaPayment } from '@/hooks/useHublaPayment';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,6 +33,7 @@ interface TicketPurchaseModalProps {
 const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProps) => {
   const { user } = useAuth();
   const { purchaseTickets, loading, showPixModal, pixData, closePixModal, cancelOrder } = useTicketPurchase();
+  const { createPayment: createHublaPayment, loading: hublaLoading } = useHublaPayment();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
@@ -118,6 +120,28 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
       eventTitle: event.title
     });
 
+    onClose();
+  };
+
+  const handleHublaPurchase = async () => {
+    if (!user) {
+      navigate('/auth');
+      onClose();
+      return;
+    }
+
+    if (!selectedTicketType || !event) return;
+
+    const cart = [{
+      event_id: event.id,
+      ticket_type_id: selectedTicketType.id,
+      quantity,
+      price: selectedTicketType.price,
+      event_title: event.title,
+      ticket_type_name: selectedTicketType.name,
+    }];
+
+    await createHublaPayment(cart);
     onClose();
   };
 
@@ -316,14 +340,26 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
                   </div>
                 </div>
 
-                <Button 
-                  className="w-full h-11 md:h-12 bg-primary hover:bg-primary/90 text-white font-bold text-base md:text-lg"
-                  disabled={loading}
-                  onClick={handlePurchase}
-                >
-                  <QrCode className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-                  {loading ? 'Processando...' : `Pagar via PIX - ${quantity} Ingresso(s)`}
-                </Button>
+                <div className="flex flex-col gap-3">
+                  <Button 
+                    className="w-full h-11 md:h-12 bg-primary hover:bg-primary/90 text-white font-bold text-base md:text-lg"
+                    disabled={hublaLoading}
+                    onClick={handleHublaPurchase}
+                  >
+                    <QrCode className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                    {hublaLoading ? 'Processando...' : `Pagar via Hubla - ${quantity} Ingresso(s)`}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    className="w-full h-11 md:h-12 font-bold text-base md:text-lg"
+                    disabled={loading}
+                    onClick={handlePurchase}
+                  >
+                    <QrCode className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                    {loading ? 'Processando...' : `Pagar via PIX - ${quantity} Ingresso(s)`}
+                  </Button>
+                </div>
                 
                  {!user && (
                    <p className="text-xs md:text-sm text-muted-foreground text-center">
