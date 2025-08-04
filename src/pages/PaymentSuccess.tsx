@@ -1,97 +1,120 @@
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, ArrowLeft, Ticket } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { toast } = useToast();
+  const { user } = useAuth();
+  const [orderDetails, setOrderDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const sessionId = searchParams.get('session_id');
-
   useEffect(() => {
-    const handleSuccessfulPayment = async () => {
-      if (sessionId) {
-        toast({
-          title: "Pagamento realizado com sucesso!",
-          description: "Seus ingressos foram processados. Você receberá um email de confirmação.",
-        });
+    const verifyPayment = async () => {
+      const sessionId = searchParams.get('session_id');
+      
+      if (!sessionId || !user) {
+        navigate('/');
+        return;
       }
-      setLoading(false);
+
+      try {
+        // Fetch order details
+        const { data: order, error } = await supabase
+          .from('orders')
+          .select(`
+            *,
+            order_items (
+              *,
+              events (title),
+              ticket_types (name)
+            )
+          `)
+          .eq('stripe_session_id', sessionId)
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching order:', error);
+          return;
+        }
+
+        setOrderDetails(order);
+      } catch (error) {
+        console.error('Error verifying payment:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    handleSuccessfulPayment();
-  }, [sessionId, toast]);
+    verifyPayment();
+  }, [searchParams, user, navigate]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Processando pagamento...</p>
+          <p>Verificando pagamento...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <Card className="text-center">
-            <CardHeader className="pb-4">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <Check className="h-8 w-8 text-green-600" />
-              </div>
-              <CardTitle className="text-2xl font-bold text-green-600">
-                Pagamento Realizado com Sucesso!
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-muted p-6 rounded-lg">
-                <div className="flex items-center justify-center mb-4">
-                  <Ticket className="h-8 w-8 text-primary mr-2" />
-                  <h3 className="text-lg font-bold">Seus Ingressos</h3>
-                </div>
-                <p className="text-muted-foreground">
-                  Seus ingressos foram processados com sucesso! Você receberá um email de confirmação 
-                  com todos os detalhes e QR codes para entrada nos eventos.
-                </p>
-              </div>
-              
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  ID da Sessão: <span className="font-mono">{sessionId}</span>
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Em caso de dúvidas, entre em contato com nosso suporte citando o ID da sessão.
-                </p>
-              </div>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="max-w-md w-full mx-4">
+        <div className="text-center space-y-6">
+          <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+          
+          <div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">
+              Pagamento Confirmado! 🎉
+            </h1>
+            <p className="text-muted-foreground">
+              Seu pagamento foi processado com sucesso. Você receberá seus ingressos por email em instantes.
+            </p>
+          </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/')}
-                  className="flex-1"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Voltar ao Início
-                </Button>
-                <Button 
-                  onClick={() => navigate('/my-tickets')}
-                  className="flex-1"
-                >
-                  <Ticket className="h-4 w-4 mr-2" />
-                  Meus Ingressos
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {orderDetails && (
+            <div className="bg-muted rounded-lg p-4 text-left">
+              <h3 className="font-semibold mb-2">Detalhes do Pedido:</h3>
+              <p className="text-sm text-muted-foreground mb-1">
+                Pedido: {orderDetails.id.slice(0, 8)}...
+              </p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Total: R$ {orderDetails.total_amount.toFixed(2).replace('.', ',')}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Status: {orderDetails.status === 'completed' ? 'Confirmado' : 'Processando'}
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <Button 
+              onClick={() => navigate('/my-tickets')} 
+              className="w-full"
+            >
+              Ver Meus Ingressos
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/')} 
+              className="w-full"
+            >
+              Voltar ao Início
+            </Button>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Verifique sua caixa de entrada e spam para o email com seus QR codes.
+          </p>
         </div>
       </div>
     </div>

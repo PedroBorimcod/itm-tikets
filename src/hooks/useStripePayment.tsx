@@ -12,25 +12,18 @@ export interface CartItem {
   ticket_type_name: string;
 }
 
-export interface CustomerInfo {
-  name?: string;
-  document?: string;
-  phone?: string;
+interface StripePaymentResponse {
+  url: string;
+  orderId: string;
+  sessionId: string;
 }
 
-interface HublaPaymentResponse {
-  checkout_url: string;
-  order_id: string;
-  total_amount: number;
-  service_fee: number;
-}
-
-export const useHublaPayment = () => {
+export const useStripePayment = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const createPayment = async (cart: CartItem[], customerInfo?: CustomerInfo): Promise<string | null> => {
+  const createPayment = async (cart: CartItem[]): Promise<string | null> => {
     if (!user) {
       toast({
         title: "Erro",
@@ -43,10 +36,9 @@ export const useHublaPayment = () => {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke("create-hubla-payment", {
+      const { data, error } = await supabase.functions.invoke("create-stripe-payment", {
         body: {
-          cart,
-          customer_info: customerInfo,
+          cartItems: cart,
         },
       });
 
@@ -54,24 +46,24 @@ export const useHublaPayment = () => {
         throw new Error(error.message);
       }
 
-      const response: HublaPaymentResponse = data;
+      const response: StripePaymentResponse = data;
       
-      if (!response.checkout_url) {
+      if (!response.url) {
         throw new Error("URL de checkout não recebida");
       }
 
       toast({
         title: "Redirecionando para pagamento",
-        description: "Você será redirecionado para o Hubla para finalizar o pagamento",
+        description: "Você será redirecionado para o Stripe para finalizar o pagamento",
       });
 
-      // Redirect to Hubla checkout
-      window.location.href = response.checkout_url;
+      // Redirect to Stripe checkout
+      window.location.href = response.url;
       
-      return response.order_id;
+      return response.orderId;
 
     } catch (error: any) {
-      console.error("Error creating Hubla payment:", error);
+      console.error("Error creating Stripe payment:", error);
       toast({
         title: "Erro no pagamento",
         description: error.message || "Erro ao processar o pagamento. Tente novamente.",

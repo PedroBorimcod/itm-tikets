@@ -6,8 +6,8 @@ verify_jwt = false
 [functions.validate-qr-code]
 verify_jwt = false
 
-[functions.hubla-webhook]
-verify_jwt = false
-
-[functions.create-hubla-payment]
+[functions.create-stripe-payment]
 verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false

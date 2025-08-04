@@ -9,13 +9,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, MapPin, Clock, Users, QrCode, X, Plus, Minus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useTicketPurchase } from '@/hooks/useTicketPurchase';
-import { useHublaPayment } from '@/hooks/useHublaPayment';
+import { useStripePayment } from '@/hooks/useStripePayment';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
-import PixPaymentModal from './PixPaymentModal';
+
 import { EventReviews } from './EventReviews';
 import { EventInterestButton } from './EventInterestButton';
 import { EventShareButton } from './EventShareButton';
@@ -32,8 +31,7 @@ interface TicketPurchaseModalProps {
 
 const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProps) => {
   const { user } = useAuth();
-  const { purchaseTickets, loading, showPixModal, pixData, closePixModal, cancelOrder } = useTicketPurchase();
-  const { createPayment: createHublaPayment, loading: hublaLoading } = useHublaPayment();
+  const { createPayment: createStripePayment, loading: stripeLoading } = useStripePayment();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
@@ -103,27 +101,7 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
     }
   };
 
-  const handlePurchase = async () => {
-    if (!user) {
-      navigate('/auth');
-      onClose();
-      return;
-    }
-
-    if (!selectedTicketType || !event) return;
-
-    await purchaseTickets({
-      eventId: event.id,
-      ticketTypeId: selectedTicketType.id,
-      quantity,
-      price: selectedTicketType.price,
-      eventTitle: event.title
-    });
-
-    onClose();
-  };
-
-  const handleHublaPurchase = async () => {
+  const handleStripePurchase = async () => {
     if (!user) {
       navigate('/auth');
       onClose();
@@ -141,7 +119,7 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
       ticket_type_name: selectedTicketType.name,
     }];
 
-    await createHublaPayment(cart);
+    await createStripePayment(cart);
     onClose();
   };
 
@@ -343,21 +321,11 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
                 <div className="flex flex-col gap-3">
                   <Button 
                     className="w-full h-11 md:h-12 bg-primary hover:bg-primary/90 text-white font-bold text-base md:text-lg"
-                    disabled={hublaLoading}
-                    onClick={handleHublaPurchase}
+                    disabled={stripeLoading}
+                    onClick={handleStripePurchase}
                   >
                     <QrCode className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-                    {hublaLoading ? 'Processando...' : `Pagar via Hubla - ${quantity} Ingresso(s)`}
-                  </Button>
-                  
-                  <Button 
-                    variant="outline"
-                    className="w-full h-11 md:h-12 font-bold text-base md:text-lg"
-                    disabled={loading}
-                    onClick={handlePurchase}
-                  >
-                    <QrCode className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-                    {loading ? 'Processando...' : `Pagar via PIX - ${quantity} Ingresso(s)`}
+                    {stripeLoading ? 'Processando...' : `Pagar com Stripe - ${quantity} Ingresso(s)`}
                   </Button>
                 </div>
                 
@@ -388,17 +356,6 @@ const TicketPurchaseModal = ({ event, isOpen, onClose }: TicketPurchaseModalProp
       </DialogContent>
     </Dialog>
 
-    {pixData && (
-      <PixPaymentModal
-        isOpen={showPixModal}
-        onClose={closePixModal}
-        onCancel={cancelOrder}
-        totalAmount={pixData.totalAmount}
-        eventTitle={pixData.eventTitle}
-        quantity={pixData.quantity}
-        orderId={pixData.orderId}
-      />
-    )}
     </>
   );
 };
