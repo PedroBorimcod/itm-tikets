@@ -89,11 +89,11 @@ serve(async (req) => {
               .eq("id", item.id);
           }
 
-          // Send confirmation email with tickets
-          await supabase.functions.invoke('send-ticket-email', {
+          // Send PDF ticket email automatically
+          await supabase.functions.invoke('generate-ticket-pdf', {
             body: {
               orderId: order.id,
-              type: 'success'
+              email: session.customer_details?.email || session.metadata?.email
             }
           });
 

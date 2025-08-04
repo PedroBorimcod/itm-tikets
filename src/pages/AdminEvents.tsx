@@ -345,6 +345,12 @@ const AdminEvents = () => {
   const [pixQrImage, setPixQrImage] = useState('');
   const [pixLoading, setPixLoading] = useState(false);
 
+  // Estados para envio de ingresso PDF
+  const [showSendTicketModal, setShowSendTicketModal] = useState(false);
+  const [sendTicketEmail, setSendTicketEmail] = useState('');
+  const [selectedOrderItem, setSelectedOrderItem] = useState<string | null>(null);
+  const [sendingTicket, setSendingTicket] = useState(false);
+
   // Carregar configuração PIX
   const loadPixConfig = async () => {
     try {
@@ -446,6 +452,42 @@ const AdminEvents = () => {
     }
   };
 
+  // Função para enviar ingresso PDF
+  const handleSendTicketPdf = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSendingTicket(true);
+
+    try {
+      const { error } = await supabase.functions.invoke('generate-ticket-pdf', {
+        body: {
+          orderItemId: selectedOrderItem,
+          email: sendTicketEmail
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Ingresso enviado",
+        description: `PDF do ingresso foi enviado para ${sendTicketEmail}`
+      });
+
+      setShowSendTicketModal(false);
+      setSendTicketEmail('');
+      setSelectedOrderItem(null);
+    } catch (error: any) {
+      toast({
+        title: "Erro ao enviar ingresso",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setSendingTicket(false);
+    }
+  };
+
   if (user?.email !== 'pepedr13@gmail.com') {
     return null;
   }
@@ -499,6 +541,13 @@ const AdminEvents = () => {
             onClick={() => navigate('/admin/pix-payments')}
           >
             Confirmar PIX
+          </Button>
+          <Button
+            variant="outline"
+            className="ml-2"
+            onClick={() => setShowSendTicketModal(true)}
+          >
+            Enviar Ingresso PDF
           </Button>
         </div>
 
@@ -607,6 +656,54 @@ const AdminEvents = () => {
                 </Button>
                 <Button type="submit" disabled={editingLoading}>
                   {editingLoading ? "Salvando..." : "Salvar alterações"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal para envio de ingresso PDF */}
+        <Dialog open={showSendTicketModal} onOpenChange={setShowSendTicketModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Enviar Ingresso PDF</DialogTitle>
+              <DialogDescription>
+                Digite o email para onde o ingresso PDF deve ser enviado.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSendTicketPdf} className="space-y-4 my-2">
+              <div>
+                <Label htmlFor="ticket-email">Email de destino</Label>
+                <Input
+                  id="ticket-email"
+                  type="email"
+                  value={sendTicketEmail}
+                  onChange={e => setSendTicketEmail(e.target.value)}
+                  placeholder="Digite o email do destinatário"
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="order-item">ID do Item do Pedido</Label>
+                <Input
+                  id="order-item"
+                  value={selectedOrderItem || ''}
+                  onChange={e => setSelectedOrderItem(e.target.value)}
+                  placeholder="ID do item do pedido (order_item)"
+                  required
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Encontre o ID do item na tabela order_items no banco de dados
+                </p>
+              </div>
+
+              <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setShowSendTicketModal(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={sendingTicket}>
+                  {sendingTicket ? "Enviando..." : "Enviar PDF"}
                 </Button>
               </DialogFooter>
             </form>
