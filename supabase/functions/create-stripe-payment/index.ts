@@ -50,10 +50,10 @@ serve(async (req) => {
     }
 
     // Calculate total amount
-    let totalAmount = 0;
+    let subtotal = 0;
     const lineItems = cartItems.map((item: any) => {
       const itemTotal = Number(item.price) * item.quantity;
-      totalAmount += itemTotal;
+      subtotal += itemTotal;
       
       return {
         price_data: {
@@ -66,6 +66,23 @@ serve(async (req) => {
         },
         quantity: item.quantity,
       };
+    });
+
+    // Add 8% service fee
+    const serviceFee = subtotal * 0.08;
+    const totalAmount = subtotal + serviceFee;
+
+    // Add service fee as a line item
+    lineItems.push({
+      price_data: {
+        currency: "brl",
+        product_data: { 
+          name: "Taxa de serviço",
+          description: "Taxa de serviço (8%)"
+        },
+        unit_amount: Math.round(serviceFee * 100), // Convert to cents
+      },
+      quantity: 1,
     });
 
     // Create checkout session
